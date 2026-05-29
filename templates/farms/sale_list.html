@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Sales Records{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h1 class="text-3xl font-bold tracking-tight text-gray-900">Sales Records</h1>
+            <p class="mt-2 text-sm text-gray-600">Track all produce sales and revenue from your farms.</p>
+        </div>
+        <a href="{% url 'farms:sale_create' %}" class="inline-flex items-center rounded-xl bg-green-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-green-800">
+            Add Sale
+        </a>
+    </div>
+
+    <div class="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead class="bg-gray-50 text-gray-600">
+                    <tr>
+                        <th class="px-6 py-4 text-left font-semibold">Crop</th>
+                        <th class="px-6 py-4 text-left font-semibold">Farm</th>
+                        <th class="px-6 py-4 text-left font-semibold">Quantity</th>
+                        <th class="px-6 py-4 text-left font-semibold">Price/Unit</th>
+                        <th class="px-6 py-4 text-left font-semibold">Total</th>
+                        <th class="px-6 py-4 text-left font-semibold">Date</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for item in sales %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 font-medium text-gray-900">{{ item.crop_name }}</td>
+                        <td class="px-6 py-4 text-gray-700">{{ item.farm|default:"—" }}</td>
+                        <td class="px-6 py-4 text-gray-700">{{ item.quantity }} {{ item.unit }}</td>
+                        <td class="px-6 py-4 text-gray-700">UGX {{ item.price_per_unit }}</td>
+                        <td class="px-6 py-4 font-semibold text-green-700">UGX {{ item.total_amount }}</td>
+                        <td class="px-6 py-4 text-gray-700">{{ item.sale_date }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-12 text-center">
+                            <div class="mx-auto max-w-sm">
+                                <p class="text-base font-semibold text-gray-900">No sales found</p>
+                                <p class="mt-1 text-sm text-gray-500">Add your first sale record to begin tracking income.</p>
+                                <a href="{% url 'farms:sale_create' %}" class="mt-4 inline-flex items-center rounded-xl bg-green-700 px-4 py-2 text-sm font-semibold text-white hover:bg-green-800">
+                                    Add Sale
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Farmer Phone Verification{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+    <h1 class="text-2xl font-bold text-gray-900 mb-2">Verify Phone Number</h1>
+    <p class="text-sm text-gray-600 mb-6">Enter your Ugandan phone number to receive an OTP code.</p>
+
+    <form method="post" class="ajax-form space-y-4">
+        {% csrf_token %}
+        <div class="ajax-errors"></div>
+        <div class="ajax-success"></div>
+
+        {% include "partials/form_errors.html" %}
+        {% include "partials/form_fields.html" %}
+
+        <button type="submit" class="w-full rounded-lg bg-green-700 px-4 py-3 text-white font-semibold hover:bg-green-800">
+            Send OTP
+        </button>
+    </form>
+</div>
+{% endblock %}

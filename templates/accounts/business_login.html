@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Business Login{% endblock %}
+
+{% block content %}
+
+{% if request.user.is_authenticated %}
+<script>
+    window.location.href = "{% url 'accounts:dashboard_redirect' %}";
+</script>
+{% endif %}
+
+<div class="max-w-md mx-auto bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+    <h1 class="text-2xl font-bold text-gray-900 mb-2">Business Login</h1>
+    <p class="text-sm text-gray-600 mb-6">Login with your email and password.</p>
+
+    <form method="post" action="{% url 'accounts:business_login' %}" class="space-y-4">
+        {% csrf_token %}
+
+        {% include "partials/form_errors.html" %}
+        {% include "partials/form_fields.html" %}
+
+        <button type="submit"
+                class="w-full rounded-lg bg-green-700 px-4 py-3 text-white font-semibold hover:bg-green-800">
+            Login
+        </button>
+    </form>
+
+    <p class="mt-4 text-sm text-gray-600">
+        No account yet?
+        <a href="{% url 'accounts:business_signup' %}"
+           class="text-green-700 font-medium hover:underline">
+            Register business
+        </a>
+    </p>
+</div>
+
+{% endblock %}

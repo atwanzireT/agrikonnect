@@ -1,0 +1,366 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}AgriKonnect - Smart Agriculture Platform{% endblock %}
+
+{% block page_header %}{% endblock %}
+
+{% block content %}
+<!-- Hero Section with Enhanced Visual Impact -->
+<section class="relative overflow-hidden bg-gradient-to-br from-white via-green-50/30 to-emerald-50/20">
+    <!-- Animated background elements -->
+    <div class="absolute inset-0 -z-10">
+        <div class="absolute top-20 left-10 w-72 h-72 bg-green-100 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-pulse"></div>
+        <div class="absolute bottom-20 right-10 w-96 h-96 bg-emerald-100 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-pulse delay-1000"></div>
+        <div class="absolute top-1/2 left-1/3 w-64 h-64 bg-amber-50 rounded-full filter blur-3xl opacity-30 animate-pulse delay-2000"></div>
+    </div>
+
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center py-8 lg:py-16">
+            <!-- Left Content with Enhanced Typography -->
+            <div class="space-y-8">
+                <div class="inline-flex items-center gap-3 bg-white/80 backdrop-blur-sm border border-green-200 rounded-full px-5 py-2 shadow-sm">
+                    <span class="relative flex h-3 w-3">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                    </span>
+                    <span class="text-sm font-semibold text-green-700 tracking-wide">✨ Smart Agriculture Platform v2.0</span>
+                </div>
+
+                <h1 class="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-gray-900 leading-[1.1] font-serif-alt">
+                    Cultivate Growth,
+                    <span class="bg-gradient-to-r from-green-600 to-emerald-500 bg-clip-text text-transparent">Harvest Success</span>
+                </h1>
+
+                <p class="text-xl text-gray-600 leading-relaxed max-w-lg">
+                    AgriKonnect bridges the gap between farmers and buyers with intelligent farm management,
+                    real-time market insights, and seamless trade opportunities.
+                </p>
+
+                <div class="flex flex-wrap gap-4 pt-4">
+                    {% if request.user.is_authenticated %}
+                        <a href="{{ dashboard_url }}" class="group relative inline-flex items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-r from-green-600 to-emerald-500 px-8 py-4 text-white font-semibold shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105">
+                            <span class="relative z-10 flex items-center gap-2">
+                                <i class="fas fa-chart-line"></i>
+                                Go to Dashboard
+                                <i class="fas fa-arrow-right text-sm group-hover:translate-x-1 transition-transform"></i>
+                            </span>
+                        </a>
+                        <a href="{% url 'accounts:logout' %}" class="inline-flex items-center justify-center rounded-2xl border-2 border-gray-200 bg-white px-8 py-4 text-gray-700 font-semibold shadow-sm hover:bg-gray-50 hover:border-gray-300 transition-all duration-200">
+                            <i class="fas fa-sign-out-alt mr-2"></i>
+                            Logout
+                        </a>
+                    {% else %}
+                        <a href="{% url 'accounts:farmer_request_otp' %}" class="group relative inline-flex items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-r from-green-600 to-emerald-500 px-8 py-4 text-white font-semibold shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105">
+                            <i class="fas fa-seedling mr-2 text-lg group-hover:rotate-12 transition-transform"></i>
+                            <span>Start Farming Journey</span>
+                        </a>
+                        <a href="{% url 'accounts:business_signup' %}" class="group inline-flex items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-500 px-8 py-4 text-white font-semibold shadow-lg transition-all duration-300 hover:shadow-xl hover:scale-105">
+                            <i class="fas fa-building mr-2 text-lg"></i>
+                            <span>Partner as Business</span>
+                        </a>
+                        <a href="{% url 'accounts:farmer_login' %}" class="inline-flex items-center justify-center rounded-2xl border-2 border-gray-200 bg-white/80 backdrop-blur-sm px-8 py-4 text-gray-700 font-semibold shadow-sm hover:bg-gray-50 hover:border-gray-300 transition-all duration-200">
+                            <i class="fas fa-sign-in-alt mr-2"></i>
+                            <span>Sign In</span>
+                        </a>
+                    {% endif %}
+                </div>
+
+                <!-- Enhanced Trust Badges -->
+                <div class="flex items-center gap-8 pt-6">
+                    <div class="flex -space-x-3">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-green-100 to-green-200 flex items-center justify-center border-2 border-white shadow-sm">
+                            <i class="fas fa-check text-green-600 text-sm"></i>
+                        </div>
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center border-2 border-white shadow-sm">
+                            <i class="fas fa-check text-blue-600 text-sm"></i>
+                        </div>
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-amber-100 to-amber-200 flex items-center justify-center border-2 border-white shadow-sm">
+                            <i class="fas fa-check text-amber-600 text-sm"></i>
+                        </div>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-sm text-gray-500">Trusted by <span class="font-bold text-gray-900">2,500+</span> agricultural professionals</span>
+                        <div class="flex items-center gap-1 mt-1">
+                            <i class="fas fa-star text-yellow-400 text-xs"></i>
+                            <i class="fas fa-star text-yellow-400 text-xs"></i>
+                            <i class="fas fa-star text-yellow-400 text-xs"></i>
+                            <i class="fas fa-star text-yellow-400 text-xs"></i>
+                            <i class="fas fa-star text-yellow-400 text-xs"></i>
+                            <span class="text-xs text-gray-500 ml-2">4.98 rating</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Cards Grid with Enhanced Design -->
+            <div>
+                <div class="rounded-3xl bg-white/90 backdrop-blur-sm p-8 shadow-2xl border border-white/50">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <!-- Farmer Card -->
+                        <div class="group rounded-2xl bg-gradient-to-br from-green-50 via-white to-green-50/30 p-6 border border-green-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 cursor-default">
+                            <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform shadow-md">
+                                <i class="fas fa-tractor text-white text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-800">For Farmers</h3>
+                            <p class="mt-2 text-gray-600 leading-relaxed">
+                                Comprehensive farm management, harvest tracking, expense analytics, and direct market access.
+                            </p>
+                            <div class="mt-4 flex items-center text-green-600 text-sm font-medium">
+                                <span>Learn more</span>
+                                <i class="fas fa-arrow-right ml-1 group-hover:translate-x-1 transition-transform"></i>
+                            </div>
+                        </div>
+
+                        <!-- Buyer Card -->
+                        <div class="group rounded-2xl bg-gradient-to-br from-blue-50 via-white to-blue-50/30 p-6 border border-blue-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 cursor-default">
+                            <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform shadow-md">
+                                <i class="fas fa-store text-white text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-800">For Buyers</h3>
+                            <p class="mt-2 text-gray-600 leading-relaxed">
+                                Curated produce listings, direct buyer-seller negotiations, and bulk order management.
+                            </p>
+                            <div class="mt-4 flex items-center text-blue-600 text-sm font-medium">
+                                <span>Learn more</span>
+                                <i class="fas fa-arrow-right ml-1 group-hover:translate-x-1 transition-transform"></i>
+                            </div>
+                        </div>
+
+                        <!-- Market Prices Card -->
+                        <div class="group rounded-2xl bg-gradient-to-br from-amber-50 via-white to-amber-50/30 p-6 border border-amber-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 cursor-default">
+                            <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform shadow-md">
+                                <i class="fas fa-chart-line text-white text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-800">Market Intelligence</h3>
+                            <p class="mt-2 text-gray-600 leading-relaxed">
+                                Real-time price tracking, seasonal trends, and predictive analytics for better decisions.
+                            </p>
+                            <div class="mt-4 flex items-center text-amber-600 text-sm font-medium">
+                                <span>View trends</span>
+                                <i class="fas fa-arrow-right ml-1 group-hover:translate-x-1 transition-transform"></i>
+                            </div>
+                        </div>
+
+                        <!-- Verified Businesses Card -->
+                        <div class="group rounded-2xl bg-gradient-to-br from-purple-50 via-white to-purple-50/30 p-6 border border-purple-100 hover:shadow-xl transition-all duration-300 hover:-translate-y-2 cursor-default">
+                            <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform shadow-md">
+                                <i class="fas fa-shield-alt text-white text-2xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-800">Verified Network</h3>
+                            <p class="mt-2 text-gray-600 leading-relaxed">
+                                Rigorous verification process ensures trust, quality assurance, and reliable partnerships.
+                            </p>
+                            <div class="mt-4 flex items-center text-purple-600 text-sm font-medium">
+                                <span>Verification process</span>
+                                <i class="fas fa-arrow-right ml-1 group-hover:translate-x-1 transition-transform"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Enhanced Highlights Section -->
+                    <div class="mt-8 rounded-2xl bg-gradient-to-r from-gray-900 to-gray-800 p-6 border border-gray-700">
+                        <div class="flex items-center gap-3 mb-5">
+                            <div class="w-8 h-8 rounded-lg bg-yellow-500/20 flex items-center justify-center">
+                                <i class="fas fa-crown text-yellow-400 text-sm"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-white">Platform Premium Features</h3>
+                        </div>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            <div class="flex items-center gap-2 text-gray-300 group cursor-default">
+                                <div class="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center group-hover:bg-green-500/30 transition-colors">
+                                    <i class="fas fa-phone-alt text-green-400 text-xs"></i>
+                                </div>
+                                <span class="text-sm">Secure OTP Login</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-gray-300 group cursor-default">
+                                <div class="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center group-hover:bg-blue-500/30 transition-colors">
+                                    <i class="fas fa-envelope text-blue-400 text-xs"></i>
+                                </div>
+                                <span class="text-sm">Email Verification</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-gray-300 group cursor-default">
+                                <div class="w-6 h-6 rounded-full bg-emerald-500/20 flex items-center justify-center group-hover:bg-emerald-500/30 transition-colors">
+                                    <i class="fas fa-chart-pie text-emerald-400 text-xs"></i>
+                                </div>
+                                <span class="text-sm">Profit Analytics</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-gray-300 group cursor-default">
+                                <div class="w-6 h-6 rounded-full bg-purple-500/20 flex items-center justify-center group-hover:bg-purple-500/30 transition-colors">
+                                    <i class="fas fa-store text-purple-400 text-xs"></i>
+                                </div>
+                                <span class="text-sm">Digital Marketplace</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-gray-300 group cursor-default">
+                                <div class="w-6 h-6 rounded-full bg-indigo-500/20 flex items-center justify-center group-hover:bg-indigo-500/30 transition-colors">
+                                    <i class="fas fa-clipboard-list text-indigo-400 text-xs"></i>
+                                </div>
+                                <span class="text-sm">Smart Requests</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-gray-300 group cursor-default">
+                                <div class="w-6 h-6 rounded-full bg-orange-500/20 flex items-center justify-center group-hover:bg-orange-500/30 transition-colors">
+                                    <i class="fas fa-chart-line text-orange-400 text-xs"></i>
+                                </div>
+                                <span class="text-sm">Price Intelligence</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Enhanced Statistics Section -->
+<section class="py-20 bg-white">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <div class="space-y-3 group cursor-default">
+                <div class="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-green-600 to-emerald-500 bg-clip-text text-transparent">2,500+</div>
+                <div class="text-sm font-medium text-gray-500 uppercase tracking-wide">Active Farmers</div>
+                <div class="w-12 h-0.5 bg-green-200 mx-auto group-hover:w-20 transition-all duration-300"></div>
+            </div>
+            <div class="space-y-3 group cursor-default">
+                <div class="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-blue-600 to-indigo-500 bg-clip-text text-transparent">850+</div>
+                <div class="text-sm font-medium text-gray-500 uppercase tracking-wide">Verified Buyers</div>
+                <div class="w-12 h-0.5 bg-blue-200 mx-auto group-hover:w-20 transition-all duration-300"></div>
+            </div>
+            <div class="space-y-3 group cursor-default">
+                <div class="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-amber-600 to-orange-500 bg-clip-text text-transparent">8,200+</div>
+                <div class="text-sm font-medium text-gray-500 uppercase tracking-wide">Successful Trades</div>
+                <div class="w-12 h-0.5 bg-amber-200 mx-auto group-hover:w-20 transition-all duration-300"></div>
+            </div>
+            <div class="space-y-3 group cursor-default">
+                <div class="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">120+</div>
+                <div class="text-sm font-medium text-gray-500 uppercase tracking-wide">Crop Varieties</div>
+                <div class="w-12 h-0.5 bg-purple-200 mx-auto group-hover:w-20 transition-all duration-300"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section with Enhanced Visuals -->
+<section class="py-20 bg-gradient-to-br from-gray-50 to-white">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+            <span class="inline-block px-5 py-2 rounded-full bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 text-sm font-semibold mb-5 tracking-wide">Simple 3-Step Process</span>
+            <h2 class="text-4xl md:text-5xl font-bold text-gray-900 font-serif-alt mb-4">Your Journey to <span class="bg-gradient-to-r from-green-600 to-emerald-500 bg-clip-text text-transparent">Agricultural Success</span></h2>
+            <p class="text-xl text-gray-500 max-w-2xl mx-auto">Join a thriving ecosystem designed to empower every stakeholder</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-6xl mx-auto">
+            <div class="text-center group cursor-default">
+                <div class="relative">
+                    <div class="w-24 h-24 rounded-2xl bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-all duration-300 shadow-xl">
+                        <i class="fas fa-user-plus text-white text-3xl"></i>
+                    </div>
+                    <div class="absolute -right-3 top-8 hidden md:block group-hover:translate-x-2 transition-transform">
+                        <i class="fas fa-arrow-right text-2xl text-gray-300"></i>
+                    </div>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-3">1. Quick Registration</h3>
+                <p class="text-gray-600 leading-relaxed px-4">Sign up in minutes with OTP verification or business document submission for secure access.</p>
+                <div class="mt-4 inline-block px-3 py-1 rounded-full bg-green-50 text-green-600 text-xs font-medium">Free to join</div>
+            </div>
+            <div class="text-center group cursor-default">
+                <div class="relative">
+                    <div class="w-24 h-24 rounded-2xl bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-all duration-300 shadow-xl">
+                        <i class="fas fa-handshake text-white text-3xl"></i>
+                    </div>
+                    <div class="absolute -right-3 top-8 hidden md:block group-hover:translate-x-2 transition-transform">
+                        <i class="fas fa-arrow-right text-2xl text-gray-300"></i>
+                    </div>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-3">2. Smart Connection</h3>
+                <p class="text-gray-600 leading-relaxed px-4">List your produce, browse buyer requests, and connect with verified partners seamlessly.</p>
+                <div class="mt-4 inline-block px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-xs font-medium">Direct negotiation</div>
+            </div>
+            <div class="text-center group cursor-default">
+                <div class="w-24 h-24 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-all duration-300 shadow-xl">
+                    <i class="fas fa-chart-line text-white text-3xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 mb-3">3. Scale & Grow</h3>
+                <p class="text-gray-600 leading-relaxed px-4">Track sales, monitor market trends, and expand your agricultural business with data-driven insights.</p>
+                <div class="mt-4 inline-block px-3 py-1 rounded-full bg-amber-50 text-amber-600 text-xs font-medium">Analytics included</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Enhanced Call to Action -->
+<section class="py-24 relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-r from-green-600 to-emerald-700 opacity-95"></div>
+    <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2000 1500"%3E%3Cpath fill="%23ffffff" fill-opacity="0.05" d="M0,0 L2000,0 L2000,1500 L0,1500 Z M500,300 L1500,300 L1500,500 L500,500 Z M300,700 L1700,700 L1700,900 L300,900 Z M800,1100 L1200,1100 L1200,1300 L800,1300 Z"%3E%3C/path%3E%3C/svg%3E')] opacity-10"></div>
+    
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-4xl md:text-5xl font-bold text-white font-serif-alt mb-6">Ready to Transform Your Agricultural Journey?</h2>
+            <p class="text-xl text-green-100 mb-10">Join thousands of farmers and businesses already using AgriKonnect to grow smarter</p>
+            {% if not request.user.is_authenticated %}
+            <div class="flex flex-wrap gap-5 justify-center">
+                <a href="{% url 'accounts:farmer_request_otp' %}" class="group inline-flex items-center gap-3 rounded-2xl bg-white px-10 py-4 text-green-700 font-bold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">
+                    <i class="fas fa-seedling text-green-600 text-xl"></i>
+                    Start Free Journey
+                    <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                </a>
+                <a href="#" class="inline-flex items-center gap-3 rounded-2xl border-2 border-white/30 bg-white/10 backdrop-blur-sm px-10 py-4 text-white font-semibold text-lg hover:bg-white/20 transition-all duration-300">
+                    <i class="fas fa-play-circle text-xl"></i>
+                    Watch Demo
+                </a>
+            </div>
+            <p class="text-green-100 text-sm mt-8">No credit card required • Free for farmers • Cancel anytime</p>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Enhanced smooth scroll with offset for fixed headers
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    const offsetTop = target.getBoundingClientRect().top + window.pageYOffset - 80;
+                    window.scrollTo({ top: offsetTop, behavior: 'smooth' });
+                }
+            });
+        });
+
+        // Add intersection observer for fade-in animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate-fade-in-up');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('section').forEach(section => {
+            section.style.opacity = '0';
+            section.style.transform = 'translateY(20px)';
+            section.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
+            observer.observe(section);
+        });
+    });
+
+    // Add CSS for fade-in animation
+    const style = document.createElement('style');
+    style.textContent = `
+        .animate-fade-in-up {
+            opacity: 1 !important;
+            transform: translateY(0) !important;
+        }
+    `;
+    document.head.appendChild(style);
+</script>
+{% endblock %}

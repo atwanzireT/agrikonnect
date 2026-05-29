@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}{{ title|default:"Buyer Request" }}{% endblock %}
+
+{% block content %}
+
+<div class="max-w-3xl mx-auto bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+
+    <h1 class="text-2xl font-bold mb-2">
+        {{ title|default:"Post Buyer Request" }}
+    </h1>
+
+    <p class="text-sm text-gray-600 mb-6">
+        Post what your business wants to buy. Your latitude and longitude will be fetched automatically.
+    </p>
+
+    <form method="post"
+          enctype="multipart/form-data"
+          action="{% url 'marketplace:buyer_request_create' %}"
+          class="space-y-4">
+
+        {% csrf_token %}
+
+        {% include "partials/form_errors.html" %}
+        {% include "partials/form_fields.html" %}
+
+        <div class="rounded-xl bg-green-50 border border-green-200 p-4">
+            <p class="text-sm font-semibold text-green-800">
+                Location Status
+            </p>
+
+            <p id="locationStatus" class="text-sm text-green-700 mt-1">
+                Fetching your current location...
+            </p>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-3">
+            <button type="button"
+                    onclick="fetchLocation()"
+                    class="rounded-lg bg-gray-900 px-5 py-3 text-white font-semibold hover:bg-black">
+                Refresh Location
+            </button>
+
+            <button type="submit"
+                    class="rounded-lg bg-green-700 px-5 py-3 text-white font-semibold hover:bg-green-800">
+                Save Buyer Request
+            </button>
+        </div>
+
+    </form>
+
+</div>
+
+<script>
+    function setValue(name, value) {
+        const input = document.querySelector(`[name="${name}"]`);
+        if (input) {
+            input.value = value;
+        }
+    }
+
+    function fetchLocation() {
+        const status = document.getElementById("locationStatus");
+
+        if (!navigator.geolocation) {
+            status.innerText = "Your browser does not support location detection.";
+            status.className = "text-sm text-red-700 mt-1";
+            return;
+        }
+
+        status.innerText = "Requesting location permission...";
+
+        navigator.geolocation.getCurrentPosition(
+            function (position) {
+                const latitude = position.coords.latitude.toFixed(7);
+                const longitude = position.coords.longitude.toFixed(7);
+
+                setValue("latitude", latitude);
+                setValue("longitude", longitude);
+
+                status.innerText = `Location detected: ${latitude}, ${longitude}`;
+                status.className = "text-sm text-green-700 mt-1";
+            },
+            function (error) {
+                let message = "Unable to get location.";
+
+                if (error.code === error.PERMISSION_DENIED) {
+                    message = "Location permission denied. Please allow location access in your browser.";
+                } else if (error.code === error.POSITION_UNAVAILABLE) {
+                    message = "Location information is unavailable.";
+                } else if (error.code === error.TIMEOUT) {
+                    message = "Location request timed out. Try again.";
+                }
+
+                status.innerText = message;
+                status.className = "text-sm text-red-700 mt-1";
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 15000,
+                maximumAge: 0
+            }
+        );
+    }
+
+    document.addEventListener("DOMContentLoaded", fetchLocation);
+</script>
+
+{% endblock %}

@@ -1,0 +1,373 @@
+<nav class="bg-white/80 backdrop-blur-md border-b border-gray-100 shadow-sm sticky top-0 z-50 transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16 lg:h-18">
+
+            <!-- Brand Logo Area -->
+            <div class="flex items-center gap-8">
+                <a href="{% url 'core:home' %}" class="flex items-center gap-2 group">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-green-600 to-green-500 flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
+                        <i class="fas fa-leaf text-white text-sm"></i>
+                    </div>
+                    <span class="text-xl font-bold bg-gradient-to-r from-green-700 to-green-500 bg-clip-text text-transparent">
+                        AgriKonnect
+                    </span>
+                </a>
+
+                <!-- Desktop Navigation Links -->
+                <div class="hidden lg:flex items-center gap-1">
+                    <a href="{% url 'core:home' %}" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-green-600 hover:bg-green-50 transition-all duration-200">
+                        <i class="fas fa-home mr-1.5 text-xs"></i>Home
+                    </a>
+
+                    {% if request.user.is_authenticated %}
+                        {% if request.user.account_type == "farmer" %}
+                            <a href="{% url 'farms:farmer_dashboard' %}" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-green-600 hover:bg-green-50 transition-all duration-200">
+                                <i class="fas fa-chart-line mr-1.5 text-xs"></i>Dashboard
+                            </a>
+                            <div class="relative group">
+                                <button class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-green-600 hover:bg-green-50 transition-all duration-200 inline-flex items-center gap-1">
+                                    <i class="fas fa-tractor mr-1.5 text-xs"></i>Farming
+                                    <i class="fas fa-chevron-down text-xs transition-transform group-hover:rotate-180"></i>
+                                </button>
+                                <div class="absolute left-0 mt-1 w-48 bg-white rounded-xl shadow-lg border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                                    <a href="{% url 'farms:farm_list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 rounded-t-xl">My Farms</a>
+                                    <a href="{% url 'farms:harvest_list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600">Harvests</a>
+                                    <a href="{% url 'farms:expense_list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600">Expenses</a>
+                                    <a href="{% url 'farms:sale_list' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 rounded-b-xl">Sales</a>
+                                </div>
+                            </div>
+                            <a href="{% url 'marketplace:listing_list' %}" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-green-600 hover:bg-green-50 transition-all duration-200">
+                                <i class="fas fa-store mr-1.5 text-xs"></i>Marketplace
+                            </a>
+                            <a href="{% url 'profiles:farmer_profile_update' %}" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-green-600 hover:bg-green-50 transition-all duration-200">
+                                <i class="fas fa-user mr-1.5 text-xs"></i>Profile
+                            </a>
+                        {% elif request.user.account_type == "business" %}
+                            <a href="{% url 'marketplace:business_dashboard' %}" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-green-600 hover:bg-green-50 transition-all duration-200">
+                                <i class="fas fa-chart-pie mr-1.5 text-xs"></i>Dashboard
+                            </a>
+                            <a href="{% url 'marketplace:listing_list' %}" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-green-600 hover:bg-green-50 transition-all duration-200">
+                                <i class="fas fa-boxes mr-1.5 text-xs"></i>Listings
+                            </a>
+                            <a href="{% url 'marketplace:buyer_request_list' %}" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-green-600 hover:bg-green-50 transition-all duration-200">
+                                <i class="fas fa-clipboard-list mr-1.5 text-xs"></i>Requests
+                            </a>
+                            <a href="{% url 'prices:market_price_list' %}" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-green-600 hover:bg-green-50 transition-all duration-200">
+                                <i class="fas fa-chart-line mr-1.5 text-xs"></i>Market Prices
+                            </a>
+                            <div class="relative group">
+                                <button class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-green-600 hover:bg-green-50 transition-all duration-200 inline-flex items-center gap-1">
+                                    <i class="fas fa-building mr-1.5 text-xs"></i>Business
+                                    <i class="fas fa-chevron-down text-xs transition-transform group-hover:rotate-180"></i>
+                                </button>
+                                <div class="absolute left-0 mt-1 w-48 bg-white rounded-xl shadow-lg border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                                    <a href="{% url 'profiles:business_profile_update' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 rounded-t-xl">Profile</a>
+                                    <a href="{% url 'profiles:business_document_upload' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 rounded-b-xl">Documents</a>
+                                </div>
+                            </div>
+                        {% elif request.user.account_type == "admin" %}
+                            <a href="{% url 'accounts:dashboard_redirect' %}" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-green-600 hover:bg-green-50 transition-all duration-200">
+                                <i class="fas fa-gauge-high mr-1.5 text-xs"></i>Dashboard
+                            </a>
+                            <a href="{% url 'farms:farm_list' %}" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-green-600 hover:bg-green-50 transition-all duration-200">
+                                <i class="fas fa-tractor mr-1.5 text-xs"></i>Farms
+                            </a>
+                            <a href="{% url 'marketplace:listing_list' %}" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-green-600 hover:bg-green-50 transition-all duration-200">
+                                <i class="fas fa-store mr-1.5 text-xs"></i>Marketplace
+                            </a>
+                            <a href="{% url 'prices:market_price_list' %}" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-green-600 hover:bg-green-50 transition-all duration-200">
+                                <i class="fas fa-chart-line mr-1.5 text-xs"></i>Prices
+                            </a>
+                            <a href="/admin/" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-green-600 hover:bg-green-50 transition-all duration-200">
+                                <i class="fas fa-shield-haltered mr-1.5 text-xs"></i>Admin
+                            </a>
+                        {% endif %}
+                    {% else %}
+                        <a href="{% url 'marketplace:listing_list' %}" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-green-600 hover:bg-green-50 transition-all duration-200">
+                            <i class="fas fa-store mr-1.5 text-xs"></i>Marketplace
+                        </a>
+                        <a href="{% url 'prices:market_price_list' %}" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-600 hover:text-green-600 hover:bg-green-50 transition-all duration-200">
+                            <i class="fas fa-chart-line mr-1.5 text-xs"></i>Market Prices
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Right Side - User Actions -->
+            <div class="hidden lg:flex items-center gap-3">
+                {% if request.user.is_authenticated %}
+                    <!-- Notification Bell -->
+                    <button class="relative p-2 rounded-lg text-gray-500 hover:text-green-600 hover:bg-green-50 transition-all duration-200">
+                        <i class="fas fa-bell text-sm"></i>
+                        <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                    </button>
+                    
+                    <!-- User Dropdown -->
+                    <div class="relative group">
+                        <button class="flex items-center gap-3 p-1.5 rounded-xl hover:bg-gray-50 transition-all duration-200">
+                            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-green-100 to-green-50 flex items-center justify-center border border-green-200">
+                                <i class="fas fa-user text-green-600 text-sm"></i>
+                            </div>
+                            <div class="text-left hidden xl:block">
+                                <p class="text-sm font-semibold text-gray-800 leading-tight">
+                                    {{ request.user.full_name|truncatechars:20 }}
+                                </p>
+                                <p class="text-xs text-gray-500 capitalize">
+                                    {{ request.user.account_type }}
+                                </p>
+                            </div>
+                            <i class="fas fa-chevron-down text-xs text-gray-400 transition-transform group-hover:rotate-180"></i>
+                        </button>
+                        <div class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                            <div class="p-3 border-b border-gray-100">
+                                <p class="text-sm font-semibold text-gray-800">{{ request.user.full_name }}</p>
+                                <p class="text-xs text-gray-500">{{ request.user.email|default:"No email" }}</p>
+                            </div>
+                            <div class="py-2">
+                                <a href="#" class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600">
+                                    <i class="fas fa-user-circle w-4"></i>My Profile
+                                </a>
+                                <a href="#" class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600">
+                                    <i class="fas fa-cog w-4"></i>Settings
+                                </a>
+                                <a href="#" class="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600">
+                                    <i class="fas fa-question-circle w-4"></i>Help Center
+                                </a>
+                            </div>
+                            <div class="border-t border-gray-100 pt-2 pb-2">
+                                <form method="post" action="{% url 'accounts:logout' %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="flex w-full items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                                        <i class="fas fa-sign-out-alt w-4"></i>Logout
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <a href="{% url 'accounts:farmer_login' %}" class="text-sm font-medium text-gray-600 hover:text-green-600 transition-colors">
+                        Farmer Login
+                    </a>
+                    <a href="{% url 'accounts:business_login' %}" class="text-sm font-medium text-gray-600 hover:text-green-600 transition-colors">
+                        Business Login
+                    </a>
+                    <a href="{% url 'accounts:farmer_request_otp' %}" class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-green-700 to-green-600 px-5 py-2 text-sm font-semibold text-white shadow-md hover:shadow-lg hover:scale-105 transition-all duration-300">
+                        <i class="fas fa-seedling text-xs"></i>
+                        Get Started
+                    </a>
+                {% endif %}
+            </div>
+
+            <!-- Mobile Menu Button -->
+            <button id="mobile-menu-button" type="button" class="lg:hidden inline-flex items-center justify-center rounded-xl p-2 text-gray-600 hover:bg-green-50 hover:text-green-600 focus:outline-none transition-all duration-200">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Mobile Menu Drawer -->
+    <div id="mobile-menu" class="fixed inset-0 z-50 lg:hidden hidden" aria-hidden="true">
+        <!-- Backdrop -->
+        <div class="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity" id="mobile-menu-backdrop"></div>
+        
+        <!-- Drawer -->
+        <div class="fixed right-0 top-0 h-full w-full max-w-sm bg-white shadow-2xl transform transition-transform duration-300 ease-out">
+            <div class="flex flex-col h-full">
+                <!-- Drawer Header -->
+                <div class="flex items-center justify-between p-4 border-b border-gray-100">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-green-600 to-green-500 flex items-center justify-center">
+                            <i class="fas fa-leaf text-white text-sm"></i>
+                        </div>
+                        <span class="text-lg font-bold text-green-700">AgriKonnect</span>
+                    </div>
+                    <button id="mobile-menu-close" class="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-times text-lg"></i>
+                    </button>
+                </div>
+                
+                <!-- Drawer Content -->
+                <div class="flex-1 overflow-y-auto p-4 space-y-1">
+                    {% if request.user.is_authenticated %}
+                        <!-- User Info Card -->
+                        <div class="mb-4 p-3 rounded-xl bg-gradient-to-r from-green-50 to-emerald-50 border border-green-100">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-600 to-green-500 flex items-center justify-center shadow-md">
+                                    <i class="fas fa-user text-white text-lg"></i>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-800">{{ request.user.full_name }}</p>
+                                    <p class="text-xs text-green-600 capitalize">{{ request.user.account_type }}</p>
+                                    <p class="text-xs text-gray-500 mt-0.5">{{ request.user.email|default:"No email" }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                    
+                    <!-- Navigation Links -->
+                    <a href="{% url 'core:home' %}" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-600 transition-all duration-200">
+                        <i class="fas fa-home w-5"></i>Home
+                    </a>
+
+                    {% if request.user.is_authenticated %}
+                        {% if request.user.account_type == "farmer" %}
+                            <a href="{% url 'farms:farmer_dashboard' %}" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-600 transition-all duration-200">
+                                <i class="fas fa-chart-line w-5"></i>Dashboard
+                            </a>
+                            <div class="pl-4 space-y-1 border-l-2 border-gray-100 ml-4">
+                                <a href="{% url 'farms:farm_list' %}" class="flex items-center gap-3 rounded-lg px-4 py-2 text-sm text-gray-600 hover:bg-green-50 hover:text-green-600 transition-all duration-200">
+                                    <i class="fas fa-tractor w-4"></i>My Farms
+                                </a>
+                                <a href="{% url 'farms:harvest_list' %}" class="flex items-center gap-3 rounded-lg px-4 py-2 text-sm text-gray-600 hover:bg-green-50 hover:text-green-600 transition-all duration-200">
+                                    <i class="fas fa-apple-alt w-4"></i>Harvests
+                                </a>
+                                <a href="{% url 'farms:expense_list' %}" class="flex items-center gap-3 rounded-lg px-4 py-2 text-sm text-gray-600 hover:bg-green-50 hover:text-green-600 transition-all duration-200">
+                                    <i class="fas fa-receipt w-4"></i>Expenses
+                                </a>
+                                <a href="{% url 'farms:sale_list' %}" class="flex items-center gap-3 rounded-lg px-4 py-2 text-sm text-gray-600 hover:bg-green-50 hover:text-green-600 transition-all duration-200">
+                                    <i class="fas fa-hand-holding-usd w-4"></i>Sales
+                                </a>
+                            </div>
+                            <a href="{% url 'marketplace:listing_list' %}" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-600 transition-all duration-200">
+                                <i class="fas fa-store w-5"></i>Marketplace
+                            </a>
+                            <a href="{% url 'profiles:farmer_profile_update' %}" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-600 transition-all duration-200">
+                                <i class="fas fa-user w-5"></i>Profile
+                            </a>
+                        {% elif request.user.account_type == "business" %}
+                            <a href="{% url 'marketplace:business_dashboard' %}" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-600 transition-all duration-200">
+                                <i class="fas fa-chart-pie w-5"></i>Dashboard
+                            </a>
+                            <a href="{% url 'marketplace:listing_list' %}" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-600 transition-all duration-200">
+                                <i class="fas fa-boxes w-5"></i>Listings
+                            </a>
+                            <a href="{% url 'marketplace:buyer_request_list' %}" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-600 transition-all duration-200">
+                                <i class="fas fa-clipboard-list w-5"></i>Buyer Requests
+                            </a>
+                            <a href="{% url 'prices:market_price_list' %}" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-600 transition-all duration-200">
+                                <i class="fas fa-chart-line w-5"></i>Market Prices
+                            </a>
+                            <a href="{% url 'profiles:business_profile_update' %}" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-600 transition-all duration-200">
+                                <i class="fas fa-building w-5"></i>Business Profile
+                            </a>
+                            <a href="{% url 'profiles:business_document_upload' %}" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-600 transition-all duration-200">
+                                <i class="fas fa-file-alt w-5"></i>Documents
+                            </a>
+                        {% elif request.user.account_type == "admin" %}
+                            <a href="{% url 'accounts:dashboard_redirect' %}" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-600 transition-all duration-200">
+                                <i class="fas fa-gauge-high w-5"></i>Admin Dashboard
+                            </a>
+                            <a href="{% url 'farms:farm_list' %}" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-600 transition-all duration-200">
+                                <i class="fas fa-tractor w-5"></i>Farms
+                            </a>
+                            <a href="{% url 'marketplace:listing_list' %}" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-600 transition-all duration-200">
+                                <i class="fas fa-store w-5"></i>Marketplace
+                            </a>
+                            <a href="{% url 'prices:market_price_list' %}" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-600 transition-all duration-200">
+                                <i class="fas fa-chart-line w-5"></i>Prices
+                            </a>
+                            <a href="/admin/" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-600 transition-all duration-200">
+                                <i class="fas fa-shield-haltered w-5"></i>Django Admin
+                            </a>
+                        {% endif %}
+                        
+                        <!-- Divider -->
+                        <div class="my-4 border-t border-gray-100"></div>
+                        
+                        <!-- Settings & Help -->
+                        <a href="#" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-600 transition-all duration-200">
+                            <i class="fas fa-cog w-5"></i>Settings
+                        </a>
+                        <a href="#" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-600 transition-all duration-200">
+                            <i class="fas fa-question-circle w-5"></i>Help & Support
+                        </a>
+                        
+                        <!-- Logout -->
+                        <form method="post" action="{% url 'accounts:logout' %}" class="mt-2">
+                            {% csrf_token %}
+                            <button type="submit" class="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 transition-all duration-200">
+                                <i class="fas fa-sign-out-alt w-5"></i>Logout
+                            </button>
+                        </form>
+                    {% else %}
+                        <a href="{% url 'marketplace:listing_list' %}" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-600 transition-all duration-200">
+                            <i class="fas fa-store w-5"></i>Marketplace
+                        </a>
+                        <a href="{% url 'prices:market_price_list' %}" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-600 transition-all duration-200">
+                            <i class="fas fa-chart-line w-5"></i>Market Prices
+                        </a>
+                        
+                        <div class="my-4 border-t border-gray-100"></div>
+                        
+                        <a href="{% url 'accounts:farmer_login' %}" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-600 transition-all duration-200">
+                            <i class="fas fa-user-check w-5"></i>Farmer Login
+                        </a>
+                        <a href="{% url 'accounts:business_login' %}" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-600 transition-all duration-200">
+                            <i class="fas fa-building w-5"></i>Business Login
+                        </a>
+                        
+                        <div class="pt-4">
+                            <a href="{% url 'accounts:farmer_request_otp' %}" class="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-green-700 to-green-600 px-4 py-3 text-sm font-semibold text-white shadow-md hover:shadow-lg transition-all duration-300">
+                                <i class="fas fa-seedling text-xs"></i>
+                                Get Started
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const menuButton = document.getElementById("mobile-menu-button");
+        const mobileMenu = document.getElementById("mobile-menu");
+        const closeButton = document.getElementById("mobile-menu-close");
+        const backdrop = document.getElementById("mobile-menu-backdrop");
+        
+        function openMenu() {
+            mobileMenu.classList.remove("hidden");
+            document.body.style.overflow = "hidden";
+            // Animate drawer in
+            const drawer = mobileMenu.querySelector('.transform');
+            if (drawer) {
+                drawer.classList.add('translate-x-0');
+                drawer.classList.remove('translate-x-full');
+            }
+        }
+        
+        function closeMenu() {
+            const drawer = mobileMenu.querySelector('.transform');
+            if (drawer) {
+                drawer.classList.remove('translate-x-0');
+                drawer.classList.add('translate-x-full');
+            }
+            setTimeout(() => {
+                mobileMenu.classList.add("hidden");
+                document.body.style.overflow = "";
+            }, 300);
+        }
+        
+        if (menuButton) {
+            menuButton.addEventListener("click", openMenu);
+        }
+        
+        if (closeButton) {
+            closeButton.addEventListener("click", closeMenu);
+        }
+        
+        if (backdrop) {
+            backdrop.addEventListener("click", closeMenu);
+        }
+        
+        // Close on escape key
+        document.addEventListener("keydown", function(e) {
+            if (e.key === "Escape" && mobileMenu && !mobileMenu.classList.contains("hidden")) {
+                closeMenu();
+            }
+        });
+    });
+</script>

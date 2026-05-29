@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Market Prices{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold">Market Prices</h1>
+    <a href="{% url 'prices:market_price_create' %}" class="rounded-lg bg-green-700 px-4 py-2 text-white hover:bg-green-800">
+        Add Market Price
+    </a>
+</div>
+
+<div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+    <table class="min-w-full text-sm">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="text-left px-6 py-4">Crop</th>
+                <th class="text-left px-6 py-4">Variety</th>
+                <th class="text-left px-6 py-4">Market</th>
+                <th class="text-left px-6 py-4">District</th>
+                <th class="text-left px-6 py-4">Date</th>
+                <th class="text-left px-6 py-4">Min</th>
+                <th class="text-left px-6 py-4">Max</th>
+                <th class="text-left px-6 py-4">Average</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in prices %}
+            <tr class="border-t">
+                <td class="px-6 py-4">{{ item.crop_name }}</td>
+                <td class="px-6 py-4">{{ item.variety }}</td>
+                <td class="px-6 py-4">{{ item.market_name }}</td>
+                <td class="px-6 py-4">{{ item.district }}</td>
+                <td class="px-6 py-4">{{ item.price_date }}</td>
+                <td class="px-6 py-4">{{ item.min_price }}</td>
+                <td class="px-6 py-4">{{ item.max_price }}</td>
+                <td class="px-6 py-4">{{ item.average_price }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="8" class="px-6 py-6 text-gray-500">No market prices found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

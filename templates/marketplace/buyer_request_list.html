@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Buyer Requests{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold">Buyer Requests</h1>
+    <a href="{% url 'marketplace:buyer_request_create' %}" class="rounded-lg bg-green-700 px-4 py-2 text-white hover:bg-green-800">
+        Add Buyer Request
+    </a>
+</div>
+
+<div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+    <table class="min-w-full text-sm">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="text-left px-6 py-4">Crop</th>
+                <th class="text-left px-6 py-4">Quantity Needed</th>
+                <th class="text-left px-6 py-4">Price Range</th>
+                <th class="text-left px-6 py-4">Delivery District</th>
+                <th class="text-left px-6 py-4">Status</th>
+                <th class="text-left px-6 py-4">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in requests %}
+            <tr class="border-t">
+                <td class="px-6 py-4">{{ item.crop_name }}</td>
+                <td class="px-6 py-4">{{ item.quantity_needed }} {{ item.unit }}</td>
+                <td class="px-6 py-4">{{ item.min_price }} - {{ item.max_price }}</td>
+                <td class="px-6 py-4">{{ item.delivery_district }}</td>
+                <td class="px-6 py-4 capitalize">{{ item.status }}</td>
+                <td class="px-6 py-4">
+                    <a href="{% url 'marketplace:buyer_request_image_upload' item.pk %}" class="text-green-700 hover:underline">Upload Image</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" class="px-6 py-6 text-gray-500">No buyer requests found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

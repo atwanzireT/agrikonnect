@@ -1,0 +1,367 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}AgriKonnect{% endblock %}</title>
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    
+    <!-- Tailwind CSS + Custom Professional Theme -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome 6 (Free) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts: Inter & Playfair Display -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        }
+        
+        .font-serif-alt {
+            font-family: 'Playfair Display', serif;
+        }
+        
+        /* Custom focus ring for accessibility */
+        .focus-ring:focus {
+            outline: none;
+            ring: 2px solid #2d6a4f;
+            ring-offset: 2px;
+        }
+        
+        /* Smooth transitions */
+        .transition-smooth {
+            transition: all 0.2s ease-in-out;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #2d6a4f;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #1b4d3e;
+        }
+        
+        /* Card hover effect */
+        .card-hover {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.01);
+        }
+        
+        /* Gradient text utility */
+        .gradient-text {
+            background: linear-gradient(135deg, #2d6a4f 0%, #40916c 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        /* Loading spinner */
+        .spinner {
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 2px solid white;
+            width: 20px;
+            height: 20px;
+            animation: spin 0.8s linear infinite;
+            display: inline-block;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Toast notification animation */
+        .toast-notification {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        /* Progress bar */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 3px;
+            background: linear-gradient(90deg, #2d6a4f, #52b788);
+            z-index: 9999;
+            transition: width 0.3s ease;
+        }
+    </style>
+    
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-gradient-to-br from-gray-50 via-white to-gray-50 text-gray-800 min-h-screen antialiased">
+
+    <!-- Global Progress Bar -->
+    <div class="progress-bar" id="progressBar"></div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
+
+    {% include "partials/navbar.html" %}
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Dynamic Breadcrumb (optional block) -->
+        {% block breadcrumb %}{% endblock %}
+        
+        <!-- Page Header -->
+        {% block page_header %}
+        <div class="mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 font-serif-alt">
+                {% block page_title %}{% endblock %}
+            </h1>
+            <p class="text-gray-500 mt-1 text-sm">
+                {% block page_subtitle %}{% endblock %}
+            </p>
+        </div>
+        {% endblock %}
+        
+        <!-- Messages Section -->
+        {% include "partials/messages.html" %}
+        
+        <!-- Main Content -->
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-100 mt-16 py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-gray-400 text-sm">&copy; 2025 AgriKonnect. Empowering Sustainable Agriculture.</p>
+                <div class="flex space-x-6">
+                    <a href="#" class="text-gray-400 hover:text-[#2d6a4f] transition-colors text-sm">About</a>
+                    <a href="#" class="text-gray-400 hover:text-[#2d6a4f] transition-colors text-sm">Privacy</a>
+                    <a href="#" class="text-gray-400 hover:text-[#2d6a4f] transition-colors text-sm">Terms</a>
+                    <a href="#" class="text-gray-400 hover:text-[#2d6a4f] transition-colors text-sm">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // ==================== HELPER FUNCTIONS ====================
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== "") {
+                const cookies = document.cookie.split(";");
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + "=")) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        // Show Toast Notification
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            
+            const colors = {
+                success: 'bg-green-50 border-green-200 text-green-800',
+                error: 'bg-red-50 border-red-200 text-red-800',
+                warning: 'bg-yellow-50 border-yellow-200 text-yellow-800',
+                info: 'bg-blue-50 border-blue-200 text-blue-800'
+            };
+            
+            const icons = {
+                success: 'fa-check-circle',
+                error: 'fa-exclamation-circle',
+                warning: 'fa-exclamation-triangle',
+                info: 'fa-info-circle'
+            };
+            
+            const toast = document.createElement('div');
+            toast.className = `toast-notification flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg border ${colors[type]} min-w-[280px] max-w-md`;
+            toast.innerHTML = `
+                <i class="fas ${icons[type]} text-lg"></i>
+                <span class="text-sm font-medium flex-1">${message}</span>
+                <button onclick="this.parentElement.remove()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xs"></i>
+                </button>
+            `;
+            
+            container.appendChild(toast);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                if (toast && toast.parentElement) toast.remove();
+            }, 5000);
+        }
+        
+        // Progress bar for navigation
+        document.addEventListener('click', (e) => {
+            const link = e.target.closest('a');
+            if (link && link.href && link.href.indexOf(window.location.origin) === 0 && !link.target) {
+                const progressBar = document.getElementById('progressBar');
+                progressBar.style.width = '30%';
+                setTimeout(() => { progressBar.style.width = '70%'; }, 100);
+            }
+        });
+        
+        window.addEventListener('load', () => {
+            const progressBar = document.getElementById('progressBar');
+            progressBar.style.width = '100%';
+            setTimeout(() => { progressBar.style.width = '0%'; }, 300);
+        });
+        
+        // ==================== AJAX FORM HANDLER ====================
+        document.addEventListener("submit", async function (e) {
+            const form = e.target;
+            if (!form.classList.contains("ajax-form")) return;
+
+            e.preventDefault();
+
+            const submitBtn = form.querySelector("[type='submit']");
+            const errorBox = form.querySelector(".ajax-errors");
+            const successBox = form.querySelector(".ajax-success");
+            const originalBtnText = submitBtn ? submitBtn.innerHTML : null;
+
+            // Clear previous messages
+            if (errorBox) errorBox.innerHTML = "";
+            if (successBox) successBox.innerHTML = "";
+
+            // Disable button and show loading state
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.dataset.originalText = originalBtnText;
+                submitBtn.innerHTML = `<span class="spinner mr-2"></span> Processing...`;
+            }
+
+            try {
+                const formData = new FormData(form);
+                const response = await fetch(form.action || window.location.href, {
+                    method: form.method || "POST",
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest",
+                        "X-CSRFToken": getCookie("csrftoken"),
+                    },
+                    body: formData,
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Show success in designated box or toast
+                    if (successBox) {
+                        successBox.innerHTML = `
+                            <div class="rounded-xl bg-green-50 border border-green-200 text-green-800 px-4 py-3 flex items-center gap-2">
+                                <i class="fas fa-check-circle text-green-500"></i>
+                                <span>${data.message || "Operation completed successfully!"}</span>
+                            </div>
+                        `;
+                    } else {
+                        showToast(data.message || "Success!", "success");
+                    }
+
+                    // Trigger custom success event
+                    form.dispatchEvent(new CustomEvent('ajax:success', { detail: data }));
+                    
+                    // Handle redirect
+                    if (data.redirect_url) {
+                        setTimeout(() => {
+                            window.location.href = data.redirect_url;
+                        }, 800);
+                    }
+                    
+                    // Reset form if data.reset is true
+                    if (data.reset_form) {
+                        form.reset();
+                    }
+                } else {
+                    let errorHtml = `
+                        <div class="rounded-xl bg-red-50 border border-red-200 text-red-800 px-4 py-3">
+                            <div class="flex items-start gap-2">
+                                <i class="fas fa-exclamation-circle mt-0.5"></i>
+                                <div class="flex-1">
+                    `;
+                    
+                    if (data.error) {
+                        errorHtml += `<p class="font-medium">${data.error}</p>`;
+                    }
+                    
+                    if (data.errors) {
+                        errorHtml += `<ul class="list-disc list-inside mt-2 space-y-1 text-sm">`;
+                        for (const [field, errors] of Object.entries(data.errors)) {
+                            errors.forEach(err => {
+                                errorHtml += `<li><span class="font-medium">${field}:</span> ${err}</li>`;
+                            });
+                        }
+                        errorHtml += `</ul>`;
+                    }
+                    
+                    errorHtml += `
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    if (errorBox) {
+                        errorBox.innerHTML = errorHtml;
+                    } else {
+                        showToast(data.error || "Please check the form for errors.", "error");
+                    }
+                    
+                    // Trigger custom error event
+                    form.dispatchEvent(new CustomEvent('ajax:error', { detail: data }));
+                }
+            } catch (err) {
+                console.error("AJAX Error:", err);
+                const errorMsg = "Network error. Please check your connection and try again.";
+                
+                if (errorBox) {
+                    errorBox.innerHTML = `
+                        <div class="rounded-xl bg-red-50 border border-red-200 text-red-800 px-4 py-3 flex items-center gap-2">
+                            <i class="fas fa-wifi"></i>
+                            <span>${errorMsg}</span>
+                        </div>
+                    `;
+                } else {
+                    showToast(errorMsg, "error");
+                }
+                
+                form.dispatchEvent(new CustomEvent('ajax:network_error', { detail: { error: err } }));
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = submitBtn.dataset.originalText || "Submit";
+                }
+            }
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

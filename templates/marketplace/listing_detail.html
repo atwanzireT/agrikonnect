@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Listing Detail{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-2 bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+        <h1 class="text-2xl font-bold">{{ listing.crop_name }}</h1>
+        <div class="mt-4 space-y-2 text-sm text-gray-700">
+            <p><strong>Variety:</strong> {{ listing.variety }}</p>
+            <p><strong>Quality:</strong> {{ listing.quality }}</p>
+            <p><strong>Quantity:</strong> {{ listing.quantity }} {{ listing.unit }}</p>
+            <p><strong>Expected Price:</strong> {{ listing.expected_price }}</p>
+            <p><strong>District:</strong> {{ listing.district }}</p>
+            <p><strong>Description:</strong> {{ listing.description }}</p>
+        </div>
+
+        <div class="mt-8">
+            <h2 class="text-lg font-semibold mb-3">Images</h2>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {% for image in listing.images.all %}
+                    <img src="{{ image.image.url }}" alt="" class="rounded-xl border border-gray-200 w-full h-40 object-cover">
+                {% empty %}
+                    <p class="text-sm text-gray-500">No images uploaded.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="space-y-6">
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+            <h2 class="text-lg font-semibold mb-4">Send Inquiry</h2>
+            <form method="post" action="{% url 'marketplace:inquiry_create' listing.pk %}" class="ajax-form space-y-4">
+                {% csrf_token %}
+                <div class="ajax-errors"></div>
+                <div class="ajax-success"></div>
+                {% for field in inquiry_form %}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ field.label }}</label>
+                        {{ field }}
+                    </div>
+                {% endfor %}
+                <button type="submit" class="w-full rounded-lg bg-blue-600 px-4 py-3 text-white font-semibold hover:bg-blue-700">
+                    Send Inquiry
+                </button>
+            </form>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+            <h2 class="text-lg font-semibold mb-4">Upload Image</h2>
+            <form method="post" action="{% url 'marketplace:listing_image_upload' listing.pk %}" enctype="multipart/form-data" class="ajax-form space-y-4">
+                {% csrf_token %}
+                <div class="ajax-errors"></div>
+                <div class="ajax-success"></div>
+                {% for field in image_form %}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ field.label }}</label>
+                        {{ field }}
+                    </div>
+                {% endfor %}
+                <button type="submit" class="w-full rounded-lg bg-green-700 px-4 py-3 text-white font-semibold hover:bg-green-800">
+                    Upload Image
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

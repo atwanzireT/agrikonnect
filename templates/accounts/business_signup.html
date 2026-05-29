@@ -1,0 +1,185 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Business Signup | AgriKonnect</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 12px;
+            outline: none;
+            margin-top: 6px;
+            background: #ffffff;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: #16a34a;
+            box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
+        }
+
+        label {
+            font-weight: 600;
+            color: #374151;
+            font-size: 14px;
+        }
+
+        .errorlist {
+            color: #dc2626;
+            font-size: 13px;
+            margin-top: 5px;
+            list-style: none;
+            padding-left: 0;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100">
+
+<div class="min-h-screen flex items-center justify-center px-4 py-8">
+
+    <div class="w-full max-w-6xl bg-white rounded-3xl shadow-2xl overflow-hidden">
+
+        <div class="grid grid-cols-1 md:grid-cols-2">
+
+            <div class="bg-green-700 p-10 text-white">
+
+                <h1 class="text-4xl font-bold">
+                    AgriKonnect
+                </h1>
+
+                <p class="mt-4 text-green-100 text-lg">
+                    Create your business account and connect directly with farmers.
+                </p>
+
+                <div class="mt-10 space-y-4">
+
+                    <div class="bg-green-600/80 rounded-2xl p-5">
+                        <h3 class="font-bold text-lg">Post Demands</h3>
+                        <p class="text-green-100 text-sm mt-1">
+                            Tell farmers what products your business wants to buy.
+                        </p>
+                    </div>
+
+                    <div class="bg-green-600/80 rounded-2xl p-5">
+                        <h3 class="font-bold text-lg">Find Farmers</h3>
+                        <p class="text-green-100 text-sm mt-1">
+                            Discover farmers by crop, price, location, and quantity.
+                        </p>
+                    </div>
+
+                    <div class="bg-green-600/80 rounded-2xl p-5">
+                        <h3 class="font-bold text-lg">Use the Map</h3>
+                        <p class="text-green-100 text-sm mt-1">
+                            View farmer and buyer pins on an interactive marketplace map.
+                        </p>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="p-8 md:p-10">
+
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold text-gray-900">
+                        Business Signup
+                    </h2>
+
+                    <p class="text-gray-500 mt-2">
+                        Register your company, shop, cooperative, processor, exporter, or buyer account.
+                    </p>
+                </div>
+
+                {% if messages %}
+                    <div class="mb-5 space-y-2">
+                        {% for message in messages %}
+                            <div class="p-4 rounded-xl bg-green-100 text-green-800 text-sm">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                {% if form.non_field_errors %}
+                    <div class="mb-5 p-4 rounded-xl bg-red-100 text-red-700 text-sm">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <form method="POST" class="space-y-5">
+                    {% csrf_token %}
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                        {% for field in form %}
+
+                            <div class="{% if field.name == 'address' or field.name == 'description' or field.name == 'business_description' %}md:col-span-2{% endif %}">
+
+                                <label for="{{ field.id_for_label }}">
+                                    {{ field.label }}
+                                </label>
+
+                                {{ field }}
+
+                                {% if field.help_text %}
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        {{ field.help_text }}
+                                    </p>
+                                {% endif %}
+
+                                {% if field.errors %}
+                                    {{ field.errors }}
+                                {% endif %}
+
+                            </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                    <button type="submit"
+                            class="w-full bg-green-700 hover:bg-green-800 text-white py-4 rounded-2xl font-bold transition">
+                        Create Business Account
+                    </button>
+
+                </form>
+
+                <div class="text-center mt-6 text-sm text-gray-600">
+                    Already registered?
+
+                    <a href="{% url 'accounts:business_login' %}"
+                       class="text-green-700 font-bold hover:underline">
+                        Login here
+                    </a>
+                </div>
+
+                <div class="text-center mt-3 text-sm text-gray-600">
+                    Are you a farmer?
+
+                    <a href="{% url 'accounts:farmer_signup' %}"
+                       class="text-green-700 font-bold hover:underline">
+                        Create farmer account
+                    </a>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>

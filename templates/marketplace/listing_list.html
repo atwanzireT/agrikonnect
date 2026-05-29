@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Produce Listings{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold">Produce Listings</h1>
+    <a href="{% url 'marketplace:listing_create' %}" class="rounded-lg bg-green-700 px-4 py-2 text-white hover:bg-green-800">Add Listing</a>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+    {% for listing in listings %}
+    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+        <h2 class="text-xl font-semibold">{{ listing.crop_name }}</h2>
+        <p class="text-sm text-gray-600 mt-1">{{ listing.quantity }} {{ listing.unit }}</p>
+        <p class="text-sm text-gray-600">{{ listing.district }}</p>
+        <p class="text-sm text-gray-600 capitalize">Status: {{ listing.status }}</p>
+        <a href="{% url 'marketplace:listing_detail' listing.pk %}" class="inline-block mt-4 text-green-700 font-medium hover:underline">
+            View Details
+        </a>
+    </div>
+    {% empty %}
+    <p class="text-gray-500">No produce listings available.</p>
+    {% endfor %}
+</div>
+{% endblock %}

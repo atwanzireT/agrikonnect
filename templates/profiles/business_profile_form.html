@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Business Profile{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+        <h1 class="text-2xl font-bold mb-6">Business Profile</h1>
+
+        <form method="post" class="ajax-form space-y-4">
+            {% csrf_token %}
+            <div class="ajax-errors"></div>
+            <div class="ajax-success"></div>
+            {% include "partials/form_fields.html" %}
+
+            <button type="submit" class="rounded-lg bg-green-700 px-5 py-3 text-white font-semibold hover:bg-green-800">
+                Save Business Profile
+            </button>
+        </form>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+        <h2 class="text-lg font-semibold mb-4">Verification Status</h2>
+        <p class="text-sm text-gray-600 mb-2">Status: <span class="font-semibold capitalize">{{ profile.approval_status }}</span></p>
+        <a href="{% url 'profiles:business_document_upload' %}" class="inline-block mt-4 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700">
+            Upload Documents
+        </a>
+    </div>
+</div>
+{% endblock %}
