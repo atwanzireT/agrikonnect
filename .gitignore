@@ -1,2 +1,65 @@
-/.env
-/venv
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+
+# Static files (if collected on server)
+staticfiles/
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# IDEs
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Migrations cache
+*.pyc
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# PostgreSQL dumps/backups
+*.sql
+*.dump
+*.backup
+
+# Gunicorn
+gunicorn.pid
+
+# Nginx temp files
+*.swp
+*.swo
+
+# Node (if frontend assets are used)
+node_modules/
+npm-debug.log*
+
+# Uploaded files
+uploads/
