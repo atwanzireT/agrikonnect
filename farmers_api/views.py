@@ -15,9 +15,10 @@ from farms.models import (
     Farm, FarmActivity, HarvestRecord, FarmExpense, SalesRecord,
     FarmProject, ProjectPlannedActivity, ProjectInputRecord, ProjectRevenueRecord,
 )
-from marketplace.models import ProduceListing, BuyerRequest, ListingInquiry, ListingStatusChoices, RequestStatusChoices
+from marketplace.models import ProduceListing, BuyerRequest, ListingInquiry, MarketplacePurchase, ListingStatusChoices, RequestStatusChoices
 
 from .serializers import (
+    AccountRegistrationSerializer,
     FarmerLoginSerializer,
     FarmerProfileSerializer,
     FarmSerializer,
@@ -32,7 +33,23 @@ from .serializers import (
     ProduceListingSerializer,
     BuyerRequestSerializer,
     ListingInquirySerializer,
+    MarketplacePurchaseSerializer,
 )
+
+
+class AccountRegistrationAPIView(APIView):
+    permission_classes = []
+
+    def post(self, request):
+        serializer = AccountRegistrationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        token, _ = Token.objects.get_or_create(user=user)
+        return Response({
+            "message": "Account created successfully",
+            "token": token.key,
+            "user": FarmerProfileSerializer(user).data,
+        }, status=status.HTTP_201_CREATED)
 
 
 class FarmerLoginAPIView(APIView):
@@ -431,6 +448,31 @@ class ListingInquiryViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return ListingInquiry.objects.filter(listing__farmer=self.request.user)
+
+
+class OpenProduceListingViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = ProduceListingSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        qs = ProduceListing.objects.filter(status=ListingStatusChoices.OPEN).select_related("farmer", "farm")
+        return apply_market_filters(qs, self.request, is_listing=True)
+
+
+class MarketplacePurchaseViewSet(viewsets.ModelViewSet):
+    serializer_class = MarketplacePurchaseSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if getattr(user, "account_type", None) == "farmer":
+            return MarketplacePurchase.objects.filter(listing__farmer=user).select_related("listing", "buyer")
+        return MarketplacePurchase.objects.filter(buyer=user).select_related("listing", "buyer")
+
+    def perform_create(self, serializer):
+        serializer.save(buyer=self.request.user)
 
 
 class FarmerOfflineSyncAPIView(APIView):

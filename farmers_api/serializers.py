@@ -5,7 +5,7 @@ from farms.models import (
     Farm, FarmActivity, HarvestRecord, FarmExpense, SalesRecord,
     FarmProject, ProjectPlannedActivity, ProjectInputRecord, ProjectRevenueRecord,
 )
-from marketplace.models import ProduceListing, BuyerRequest, ListingInquiry
+from marketplace.models import ProduceListing, BuyerRequest, ListingInquiry, MarketplacePurchase
 
 User = get_user_model()
 
@@ -54,6 +54,49 @@ def _find_user_by_identifier(identifier: str):
         return None
 
 
+class AccountRegistrationSerializer(serializers.Serializer):
+    full_name = serializers.CharField(max_length=255)
+    password = serializers.CharField(write_only=True, min_length=6)
+    phone = serializers.CharField(required=False, allow_blank=True)
+    email = serializers.EmailField(required=False, allow_blank=True)
+    district = serializers.CharField(required=False, allow_blank=True)
+    account_type = serializers.ChoiceField(choices=[("farmer", "Farmer"), ("guest", "Guest")], default="farmer")
+
+    def validate(self, attrs):
+        phone = str(attrs.get("phone") or "").strip()
+        email = str(attrs.get("email") or "").strip().lower()
+        if not phone and not email:
+            raise serializers.ValidationError("Provide either phone or email.")
+        if phone:
+            # Store phone in a consistent Uganda format where possible.
+            candidates = _phone_candidates(phone)
+            phone = next((p for p in candidates if p.startswith("+256")), phone)
+            if User.objects.filter(phone__in=candidates).exists():
+                raise serializers.ValidationError({"phone": "This phone number is already registered."})
+        if email and User.objects.filter(email__iexact=email).exists():
+            raise serializers.ValidationError({"email": "This email is already registered."})
+        attrs["phone"] = phone or None
+        attrs["email"] = email or None
+        return attrs
+
+    def create(self, validated_data):
+        from accounts.services import create_farmer_account
+
+        password = validated_data.pop("password")
+        account_type = validated_data.pop("account_type", "farmer")
+        if account_type != "farmer":
+            raise serializers.ValidationError({"account_type": "Only farmer registration is supported by this endpoint."})
+
+        return create_farmer_account(
+            full_name=validated_data.get("full_name"),
+            password=password,
+            phone=validated_data.get("phone"),
+            email=validated_data.get("email"),
+            district=validated_data.get("district"),
+            verified=True,
+        )
+
+
 class FarmerLoginSerializer(serializers.Serializer):
     # Mobile app sends `identifier`. Older builds may still send `username`, `phone`, `email`, or `phone_or_email`.
     identifier = serializers.CharField(required=False, allow_blank=True)
@@ -99,8 +142,8 @@ class FarmerLoginSerializer(serializers.Serializer):
             raise serializers.ValidationError("Invalid login credentials.")
         if not user.is_active:
             raise serializers.ValidationError("This account is inactive.")
-        if getattr(user, "account_type", None) not in ["farmer", "admin"]:
-            raise serializers.ValidationError("Only farmer accounts can use this mobile API.")
+        if getattr(user, "account_type", None) not in ["farmer", "guest", "admin"]:
+            raise serializers.ValidationError("Only farmer or guest accounts can use this API.")
 
         attrs["user"] = user
         return attrs
@@ -234,3 +277,14 @@ class ListingInquirySerializer(serializers.ModelSerializer):
         model = ListingInquiry
         fields = "__all__"
         read_only_fields = ["business_user", "created_at", "updated_at", "status"]
+
+
+class MarketplacePurchaseSerializer(serializers.ModelSerializer):
+    buyer_name = serializers.CharField(source="buyer.full_name", read_only=True)
+    listing_name = serializers.CharField(source="listing.crop_name", read_only=True)
+    farmer_name = serializers.CharField(source="listing.farmer.full_name", read_only=True)
+
+    class Meta:
+        model = MarketplacePurchase
+        fields = "__all__"
+        read_only_fields = ["buyer", "total_amount", "status", "created_at", "updated_at"]

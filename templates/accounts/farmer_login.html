@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Farmer Login - AgriKonnect{% endblock %}
+{% block title %}Farmer Login | AgroSync{% endblock %}
 
 {% block breadcrumb %}
 <nav class="flex items-center gap-2 text-sm mb-6">
@@ -12,182 +12,302 @@
 {% endblock %}
 
 {% block content %}
-<div class="min-h-[80vh] flex items-center justify-center py-12">
-    <div class="w-full max-w-md">
-        <!-- Decorative Header -->
-        <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-green-100 to-green-50 shadow-lg mb-4">
-                <i class="fas fa-tractor text-green-600 text-2xl"></i>
+
+<div class="min-h-[85vh] flex items-center justify-center px-4 sm:px-6 lg:px-8 py-8 bg-gradient-to-br from-slate-50 via-green-50 to-emerald-50">
+
+    <div class="w-full max-w-6xl bg-white/95 backdrop-blur-xl rounded-3xl lg:rounded-[32px] shadow-[0_20px_60px_rgba(0,0,0,0.10)] border border-white overflow-hidden">
+
+        <div class="grid grid-cols-1 lg:grid-cols-[0.95fr_1.05fr]">
+
+            <!-- Branding Section -->
+            <div class="relative hidden lg:flex min-h-[680px] bg-gradient-to-br from-green-800 via-emerald-700 to-green-500 p-10 text-white overflow-hidden">
+
+                <div class="absolute top-0 right-0 w-72 h-72 bg-white/10 rounded-full blur-3xl"></div>
+                <div class="absolute bottom-0 left-0 w-56 h-56 bg-black/10 rounded-full blur-3xl"></div>
+
+                <div class="relative z-10 flex flex-col justify-between w-full">
+
+                    <div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center text-2xl font-bold">
+                                A
+                            </div>
+
+                            <div>
+                                <h1 class="text-3xl font-bold">
+                                    AgroSync
+                                </h1>
+                                <p class="text-green-100 text-sm">
+                                    Farmer Marketplace Portal
+                                </p>
+                            </div>
+                        </div>
+
+                        <h2 class="mt-10 text-4xl font-bold leading-tight">
+                            Sell smarter,<br>
+                            grow faster.
+                        </h2>
+
+                        <p class="mt-5 text-green-100 text-lg leading-8 max-w-md">
+                            Upload products, reach trusted buyers, monitor market opportunities,
+                            and grow your agricultural business from one simple platform.
+                        </p>
+
+                        <div class="grid grid-cols-3 gap-4 mt-10">
+                            <div class="bg-white/10 backdrop-blur rounded-2xl p-4">
+                                <div class="text-2xl font-bold">500+</div>
+                                <div class="text-xs text-green-100">Farmers</div>
+                            </div>
+
+                            <div class="bg-white/10 backdrop-blur rounded-2xl p-4">
+                                <div class="text-2xl font-bold">50+</div>
+                                <div class="text-xs text-green-100">Buyers</div>
+                            </div>
+
+                            <div class="bg-white/10 backdrop-blur rounded-2xl p-4">
+                                <div class="text-2xl font-bold">24/7</div>
+                                <div class="text-xs text-green-100">Market</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-3 h-3 bg-green-300 rounded-full"></div>
+                            <span class="text-green-50">Post and manage farm products</span>
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <div class="w-3 h-3 bg-green-300 rounded-full"></div>
+                            <span class="text-green-50">Connect with buyers and businesses</span>
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <div class="w-3 h-3 bg-green-300 rounded-full"></div>
+                            <span class="text-green-50">View market opportunities near you</span>
+                        </div>
+                    </div>
+
+                </div>
             </div>
-            <h1 class="text-2xl md:text-3xl font-bold text-gray-900 font-serif-alt">Welcome Back, Farmer!</h1>
-            <p class="text-gray-500 mt-2 text-sm">
-                Login with your phone number and password to access your dashboard
-            </p>
+
+            <!-- Login Form Section -->
+            <div class="flex items-center">
+                <div class="w-full p-5 sm:p-8 lg:p-10 xl:p-12">
+
+                    <div class="text-center mb-7">
+                        <div class="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-gradient-to-br from-green-700 to-emerald-500 text-white shadow-xl mb-5">
+                            <i class="fas fa-seedling text-2xl sm:text-3xl"></i>
+                        </div>
+
+                        <span class="inline-flex items-center rounded-full bg-green-50 px-4 py-1.5 text-xs font-bold text-green-700 ring-1 ring-green-100">
+                            Farmer Portal
+                        </span>
+
+                        <h1 class="mt-5 text-3xl sm:text-4xl font-bold text-gray-900">
+                            Welcome Back, Farmer
+                        </h1>
+
+                        <p class="text-gray-500 mt-3 leading-7 max-w-md mx-auto">
+                            Login with your phone number and password to access your dashboard.
+                        </p>
+                    </div>
+
+                    <form method="post" class="ajax-form space-y-5" action="{% url 'accounts:farmer_login' %}">
+                        {% csrf_token %}
+
+                        <div class="ajax-errors"></div>
+                        <div class="ajax-success"></div>
+
+                        {% if form.non_field_errors %}
+                        <div class="rounded-2xl bg-red-50 border border-red-100 text-red-700 px-4 py-3">
+                            <div class="flex items-start gap-2">
+                                <i class="fas fa-exclamation-circle mt-0.5"></i>
+                                <div class="flex-1">
+                                    {% for error in form.non_field_errors %}
+                                        <p class="text-sm">{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="space-y-4">
+
+                            <!-- Phone Field -->
+                            <div>
+                                <label for="id_phone" class="block text-sm font-semibold text-gray-700 mb-1.5">
+                                    <i class="fas fa-phone-alt text-green-500 mr-1"></i>
+                                    Phone Number
+                                </label>
+
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none">
+                                        <span class="text-gray-400 text-sm">+</span>
+                                    </div>
+
+                                    <input type="tel"
+                                           name="phone"
+                                           id="id_phone"
+                                           class="w-full rounded-2xl border border-gray-200 bg-gray-50 pl-9 pr-4 py-3.5 text-gray-900 focus:border-green-500 focus:ring-4 focus:ring-green-100 focus:bg-white transition-all duration-200"
+                                           placeholder="1234567890"
+                                           value="{{ form.phone.value|default:'' }}"
+                                           required>
+                                </div>
+
+                                {% if form.phone.errors %}
+                                    <p class="mt-1.5 text-xs text-red-600">{{ form.phone.errors.0 }}</p>
+                                {% endif %}
+
+                                <p class="mt-1.5 text-xs text-gray-400">
+                                    Enter phone number without country code.
+                                </p>
+                            </div>
+
+                            <!-- Password Field -->
+                            <div>
+                                <label for="id_password" class="block text-sm font-semibold text-gray-700 mb-1.5">
+                                    <i class="fas fa-lock text-green-500 mr-1"></i>
+                                    Password
+                                </label>
+
+                                <div class="relative">
+                                    <input type="password"
+                                           name="password"
+                                           id="id_password"
+                                           class="w-full rounded-2xl border border-gray-200 bg-gray-50 pl-4 pr-12 py-3.5 text-gray-900 focus:border-green-500 focus:ring-4 focus:ring-green-100 focus:bg-white transition-all duration-200"
+                                           required>
+
+                                    <button type="button"
+                                            class="password-toggle absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+
+                                {% if form.password.errors %}
+                                    <p class="mt-1.5 text-xs text-red-600">{{ form.password.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+
+                        </div>
+
+                        <div class="flex justify-end">
+                            <a href="#" class="text-sm text-green-600 hover:text-green-700 font-semibold transition-colors">
+                                Forgot password?
+                            </a>
+                        </div>
+
+                        <button type="submit"
+                                class="group relative w-full flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-green-700 via-green-600 to-emerald-500 px-4 py-3.5 text-white font-semibold shadow-xl hover:shadow-2xl hover:-translate-y-0.5 transition-all duration-300">
+                            <i class="fas fa-sign-in-alt text-sm group-hover:translate-x-0.5 transition-transform"></i>
+                            <span>Login to Farmer Dashboard</span>
+                        </button>
+                    </form>
+
+                    <div class="mt-7 flex items-center gap-3">
+                        <div class="h-px flex-1 bg-gray-200"></div>
+                        <span class="text-xs text-gray-400 whitespace-nowrap">New to AgroSync?</span>
+                        <div class="h-px flex-1 bg-gray-200"></div>
+                    </div>
+
+                    <div class="mt-5 grid grid-cols-1 md:grid-cols-2 gap-3 text-center text-sm">
+                        <a href="{% url 'accounts:farmer_request_otp' %}"
+                           class="rounded-2xl border border-gray-200 px-4 py-3 font-semibold text-gray-700 hover:border-green-200 hover:bg-green-50 hover:text-green-700 transition">
+                            Create Farmer Account
+                        </a>
+
+                        <a href="{% url 'accounts:business_login' %}"
+                           class="rounded-2xl border border-gray-200 px-4 py-3 font-semibold text-gray-700 hover:border-green-200 hover:bg-green-50 hover:text-green-700 transition">
+                            Login as Business
+                        </a>
+                    </div>
+
+                    <div class="mt-6 rounded-2xl bg-white border border-green-100 p-4 sm:p-5">
+                        <h3 class="font-bold text-gray-800 mb-3">
+                            Why use AgroSync?
+                        </h3>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm text-gray-600">
+                            <div class="flex items-center sm:items-start gap-2">
+                                <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
+                                <span>Sell products directly to buyers</span>
+                            </div>
+
+                            <div class="flex items-center sm:items-start gap-2">
+                                <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
+                                <span>Track market prices and demand</span>
+                            </div>
+
+                            <div class="flex items-center sm:items-start gap-2">
+                                <i class="fas fa-check-circle text-green-600 mt-0.5"></i>
+                                <span>Access nearby opportunities</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-5 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-green-50 to-emerald-50 border border-green-100">
+                        <div class="flex items-start gap-3">
+                            <i class="fas fa-life-ring text-green-500 text-sm mt-0.5"></i>
+                            <div class="text-xs text-gray-500">
+                                <p class="font-semibold text-gray-700 mb-1">
+                                    Need help logging in?
+                                </p>
+                                <p>
+                                    Contact support at
+                                    <a href="mailto:support@agrosync.com" class="text-green-600 font-semibold">
+                                        support@agrosync.com
+                                    </a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
         </div>
 
-        <!-- Login Card -->
-        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 md:p-8">
-            <form method="post" class="ajax-form space-y-6" action="{% url 'accounts:farmer_login' %}">
-                {% csrf_token %}
-                
-                <!-- Dynamic Message Containers -->
-                <div class="ajax-errors"></div>
-                <div class="ajax-success"></div>
-                
-                <!-- Standard form errors fallback -->
-                {% if form.non_field_errors %}
-                <div class="rounded-xl bg-red-50 border border-red-200 text-red-800 px-4 py-3">
-                    <div class="flex items-start gap-2">
-                        <i class="fas fa-exclamation-circle mt-0.5"></i>
-                        <div class="flex-1">
-                            {% for error in form.non_field_errors %}
-                                <p class="text-sm">{{ error }}</p>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-                {% endif %}
-                
-                <!-- Form Fields -->
-                <div class="space-y-5">
-                    <!-- Phone Field -->
-                    <div>
-                        <label for="id_phone" class="block text-sm font-medium text-gray-700 mb-1.5">
-                            <i class="fas fa-phone-alt text-green-500 mr-1"></i>Phone Number
-                        </label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                <span class="text-gray-400 text-sm">+</span>
-                            </div>
-                            <input type="tel" name="phone" id="id_phone" 
-                                   class="w-full rounded-xl border-gray-200 bg-gray-50 pl-8 pr-4 py-3 text-gray-900 focus:border-green-500 focus:ring-2 focus:ring-green-500 focus:bg-white transition-all duration-200"
-                                   placeholder="1234567890" 
-                                   value="{{ form.phone.value|default:'' }}"
-                                   required>
-                        </div>
-                        {% if form.phone.errors %}
-                        <p class="mt-1 text-xs text-red-600">{{ form.phone.errors.0 }}</p>
-                        {% endif %}
-                        <p class="mt-1 text-xs text-gray-400">Enter phone number without country code (e.g., 9876543210)</p>
-                    </div>
-                    
-                    <!-- Password Field -->
-                    <div>
-                        <label for="id_password" class="block text-sm font-medium text-gray-700 mb-1.5">
-                            <i class="fas fa-lock text-green-500 mr-1"></i>Password
-                        </label>
-                        <div class="relative">
-                            <input type="password" name="password" id="id_password" 
-                                   class="w-full rounded-xl border-gray-200 bg-gray-50 pl-4 pr-12 py-3 text-gray-900 focus:border-green-500 focus:ring-2 focus:ring-green-500 focus:bg-white transition-all duration-200"
-                                   required>
-                            <button type="button" class="password-toggle absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
-                        {% if form.password.errors %}
-                        <p class="mt-1 text-xs text-red-600">{{ form.password.errors.0 }}</p>
-                        {% endif %}
-                    </div>
-                </div>
-                
-                <!-- Forgot Password Link -->
-                <div class="text-right">
-                    <a href="#" class="text-sm text-green-600 hover:text-green-700 font-medium transition-colors">
-                        Forgot password?
-                    </a>
-                </div>
-                
-                <!-- Submit Button -->
-                <button type="submit" 
-                        class="group relative w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-green-700 to-green-600 px-4 py-3.5 text-white font-semibold shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300">
-                    <i class="fas fa-sign-in-alt text-sm group-hover:translate-x-0.5 transition-transform"></i>
-                    <span>Login to Dashboard</span>
-                </button>
-            </form>
-            
-            <!-- Divider -->
-            <div class="relative my-6">
-                <div class="absolute inset-0 flex items-center">
-                    <div class="w-full border-t border-gray-200"></div>
-                </div>
-                <div class="relative flex justify-center text-sm">
-                    <span class="px-3 bg-white text-gray-400">New to AgriKonnect?</span>
-                </div>
-            </div>
-            
-            <!-- Sign Up Link -->
-            <div class="text-center">
-                <a href="{% url 'accounts:farmer_request_otp' %}" 
-                   class="inline-flex items-center gap-2 text-green-600 font-semibold hover:text-green-700 transition-colors">
-                    <i class="fas fa-seedling text-sm"></i>
-                    Create New Account
-                    <i class="fas fa-arrow-right text-xs"></i>
-                </a>
-            </div>
-        </div>
-        
-        <!-- Alternative Login Options -->
-        <div class="text-center mt-6">
-            <p class="text-sm text-gray-500">
-                Are you a business?
-                <a href="{% url 'accounts:business_login' %}" class="text-green-600 hover:text-green-700 font-medium">
-                    Login as Business
-                </a>
-            </p>
-        </div>
-        
-        <!-- Help Text -->
-        <div class="mt-8 p-4 rounded-xl bg-gray-50 border border-gray-100">
-            <div class="flex items-start gap-3">
-                <i class="fas fa-life-ring text-green-500 text-sm mt-0.5"></i>
-                <div class="text-xs text-gray-500">
-                    <p class="font-medium text-gray-700 mb-1">Need help logging in?</p>
-                    <p>Contact our support team at <a href="mailto:support@agrikonnect.com" class="text-green-600">support@agrikonnect.com</a></p>
-                </div>
-            </div>
-        </div>
     </div>
+
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Auto-focus on phone field
+    document.addEventListener('DOMContentLoaded', function () {
         const phoneField = document.getElementById('id_phone');
         if (phoneField) {
             phoneField.focus();
         }
-        
-        // Password visibility toggle
+
         const toggleBtn = document.querySelector('.password-toggle');
         const passwordField = document.getElementById('id_password');
-        
+
         if (toggleBtn && passwordField) {
-            toggleBtn.addEventListener('click', function() {
+            toggleBtn.addEventListener('click', function () {
                 const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
                 passwordField.setAttribute('type', type);
-                this.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+
+                this.innerHTML = type === 'password'
+                    ? '<i class="fas fa-eye"></i>'
+                    : '<i class="fas fa-eye-slash"></i>';
             });
         }
     });
 </script>
 
 <style>
-    /* Custom input focus styles */
     input:focus {
         outline: none;
-        ring: 2px solid #2d6a4f;
-        ring-offset: 2px;
     }
-    
-    /* Remove number input spinners */
+
     input[type="tel"]::-webkit-inner-spin-button,
     input[type="tel"]::-webkit-outer-spin-button {
         -webkit-appearance: none;
         margin: 0;
     }
-    
+
     input[type="tel"] {
         -moz-appearance: textfield;
     }
 </style>
+
 {% endblock %}

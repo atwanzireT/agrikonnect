@@ -1,4 +1,4 @@
-# Generated for AgriKonnect farmer mobile/offline API upgrade
+# Generated for AgroSync farmer mobile/offline API upgrade
 
 from django.conf import settings
 from django.db import migrations, models

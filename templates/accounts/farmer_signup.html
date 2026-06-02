@@ -1,22 +1,48 @@
 {% extends "base.html" %}
-{% block title %}Farmer Signup{% endblock %}
+{% block title %}Farmer Signup | AgroSync{% endblock %}
 
 {% block content %}
-<div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-    <h1 class="text-2xl font-bold text-gray-900 mb-2">Create Farmer Account</h1>
-    <p class="text-sm text-gray-600 mb-6">Verified phone: <span class="font-semibold">{{ verified_phone }}</span></p>
+<div class="min-h-[85vh] flex items-center justify-center px-4 sm:px-6 lg:px-8 py-8 bg-gradient-to-br from-slate-50 via-green-50 to-emerald-50">
+    <div class="w-full max-w-6xl bg-white/95 backdrop-blur-xl rounded-3xl lg:rounded-[32px] shadow-[0_20px_60px_rgba(0,0,0,0.10)] border border-white overflow-hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-[0.9fr_1.1fr]">
+            <div class="relative hidden lg:flex min-h-[640px] bg-gradient-to-br from-green-800 via-emerald-700 to-green-500 p-10 text-white overflow-hidden">
+                <div class="relative z-10 flex flex-col justify-between w-full">
+                    <div><div class="flex items-center gap-3"><div class="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center text-2xl font-bold">A</div><div><h1 class="text-3xl font-bold">AgroSync</h1><p class="text-green-100 text-sm">Farmer Account Registration</p></div></div><h2 class="mt-10 text-4xl font-bold leading-tight">Create your farmer<br>marketplace account.</h2></div>
+                    <div class="space-y-4"><div class="flex items-center gap-3"><div class="w-3 h-3 bg-green-300 rounded-full"></div><span>Post products for buyers to view</span></div></div>
+                </div>
+            </div>
+            <div class="flex items-center">
+                <div class="w-full p-5 sm:p-8 lg:p-10 xl:p-12">
+                    <div class="text-center mb-8">
+                        <div class="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-br from-green-700 to-emerald-500 text-white shadow-xl mb-5"><i class="fas fa-user-plus text-3xl"></i></div>
+                        <span class="inline-flex items-center rounded-full bg-green-50 px-4 py-1.5 text-xs font-bold text-green-700 ring-1 ring-green-100">Farmer Registration</span>
+                        <h1 class="mt-5 text-3xl sm:text-4xl font-bold text-gray-900">Create Farmer Account</h1>
+                        <div class="mt-4 inline-flex items-center gap-2 rounded-2xl bg-gray-50 border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700"><i class="fas fa-phone-alt text-green-600"></i><span>Verified phone: {{ verified_phone }}</span></div>
+                    </div>
 
-    <form method="post" class="ajax-form space-y-4">
-        {% csrf_token %}
-        <div class="ajax-errors"></div>
-        <div class="ajax-success"></div>
+                    {% if messages %}<div class="mb-5 space-y-2">{% for message in messages %}<div class="rounded-2xl px-4 py-3 text-sm {% if message.tags == 'error' %}bg-red-50 border border-red-100 text-red-700{% else %}bg-green-50 border border-green-100 text-green-800{% endif %}">{{ message }}</div>{% endfor %}</div>{% endif %}
 
-        {% include "partials/form_errors.html" %}
-        {% include "partials/form_fields.html" %}
-
-        <button type="submit" class="w-full rounded-lg bg-green-700 px-4 py-3 text-white font-semibold hover:bg-green-800">
-            Create Account
-        </button>
-    </form>
+                    <form method="post" action="{% url 'accounts:farmer_signup' %}" class="space-y-5">
+                        {% csrf_token %}
+                        {% if form.non_field_errors %}<div class="rounded-2xl bg-red-50 border border-red-100 text-red-700 px-4 py-3 text-sm">{{ form.non_field_errors }}</div>{% endif %}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {% for field in form %}
+                                <div>
+                                    <label for="{{ field.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-1.5">{{ field.label }}</label>
+                                    {{ field }}
+                                    {% if field.errors %}<p class="mt-1.5 text-xs text-red-600">{{ field.errors.0 }}</p>{% endif %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <button type="submit" class="w-full rounded-2xl bg-gradient-to-r from-green-700 via-green-600 to-emerald-500 px-4 py-4 text-white font-semibold shadow-xl hover:shadow-2xl transition-all">Create Account</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+<style>
+input, select, textarea { width:100%; padding:14px 16px; border:1px solid #e5e7eb; border-radius:16px; outline:none; margin-top:6px; background:#f9fafb; transition:all .25s ease; }
+input:focus, select:focus, textarea:focus { background:#fff; border-color:#16a34a; box-shadow:0 0 0 4px rgba(22,163,74,.12); }
+</style>
 {% endblock %}

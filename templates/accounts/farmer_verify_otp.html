@@ -1,248 +1,87 @@
 {% extends "base.html" %}
-{% block title %}Verify OTP - AgriKonnect{% endblock %}
-
-{% block breadcrumb %}
-<nav class="flex items-center gap-2 text-sm mb-6">
-    <a href="{% url 'home' %}" class="text-gray-500 hover:text-green-600 transition-colors">
-        <i class="fas fa-home"></i> Home
-    </a>
-    <i class="fas fa-chevron-right text-gray-400 text-xs"></i>
-    <span class="text-gray-700 font-medium">Verify OTP</span>
-</nav>
-{% endblock %}
+{% block title %}Verify OTP | AgroSync{% endblock %}
 
 {% block content %}
-<div class="min-h-[80vh] flex items-center justify-center py-12">
-    <div class="w-full max-w-md">
-        <!-- Decorative header -->
-        <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-green-100 to-green-50 shadow-lg mb-4">
-                <i class="fas fa-mobile-alt text-green-600 text-2xl"></i>
+<div class="min-h-[85vh] flex items-center justify-center px-4 sm:px-6 lg:px-8 py-8 bg-gradient-to-br from-slate-50 via-green-50 to-emerald-50">
+    <div class="w-full max-w-5xl bg-white/95 backdrop-blur-xl rounded-3xl lg:rounded-[32px] shadow-[0_20px_60px_rgba(0,0,0,0.10)] border border-white overflow-hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-[0.9fr_1.1fr]">
+            <div class="relative hidden lg:flex min-h-[560px] bg-gradient-to-br from-green-800 via-emerald-700 to-green-500 p-10 text-white overflow-hidden">
+                <div class="relative z-10 flex flex-col justify-between w-full">
+                    <div>
+                        <div class="flex items-center gap-3"><div class="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center text-2xl font-bold">A</div><div><h1 class="text-3xl font-bold">AgroSync</h1><p class="text-green-100 text-sm">Secure Farmer Verification</p></div></div>
+                        <h2 class="mt-10 text-4xl font-bold leading-tight">One more step,<br>then you are in.</h2>
+                        <p class="mt-5 text-green-100 text-lg leading-8 max-w-md">Enter the latest 6-digit OTP sent to your phone.</p>
+                    </div>
+                    <div class="space-y-4"><div class="flex items-center gap-3"><div class="w-3 h-3 bg-green-300 rounded-full"></div><span>Use the newest SMS code only</span></div></div>
+                </div>
             </div>
-            <h1 class="text-2xl md:text-3xl font-bold text-gray-900 font-serif-alt">Verify Your Number</h1>
-            <p class="text-gray-500 mt-2 text-sm">
-                We've sent a 6-digit verification code to
-                <span class="font-semibold text-gray-700 block mt-1">{{ phone }}</span>
-            </p>
-        </div>
 
-        <!-- OTP Card -->
-        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 md:p-8">
-            <form method="post" class="ajax-form space-y-6" data-otp-form>
-                {% csrf_token %}
-                
-                <!-- Dynamic Message Containers -->
-                <div class="ajax-errors"></div>
-                <div class="ajax-success"></div>
-                
-                <!-- Standard form errors fallback -->
-                {% include "partials/form_errors.html" %}
-                
-                <!-- Form Fields -->
-                <div class="space-y-4">
-                    {% include "partials/form_fields.html" %}
-                </div>
-                
-                <!-- Timer and Resend Section -->
-                <div class="space-y-4">
-                    <div class="flex items-center justify-between text-sm">
-                        <span class="text-gray-500">Code expires in</span>
-                        <span class="font-mono font-semibold text-green-600 bg-green-50 px-3 py-1 rounded-lg" id="timerDisplay">02:00</span>
+            <div class="flex items-center">
+                <div class="w-full p-5 sm:p-8 lg:p-10 xl:p-12">
+                    <div class="text-center mb-8">
+                        <div class="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-br from-green-700 to-emerald-500 text-white shadow-xl mb-5"><i class="fas fa-mobile-alt text-3xl"></i></div>
+                        <span class="inline-flex items-center rounded-full bg-green-50 px-4 py-1.5 text-xs font-bold text-green-700 ring-1 ring-green-100">OTP Verification</span>
+                        <h1 class="mt-5 text-3xl sm:text-4xl font-bold text-gray-900">Verify Your Number</h1>
+                        <p class="text-gray-500 mt-3 leading-7 max-w-md mx-auto">We sent a 6-digit code to:</p>
+                        <div class="mt-4 inline-flex items-center gap-2 rounded-2xl bg-gray-50 border border-gray-200 px-4 py-2 text-sm font-semibold text-gray-700"><i class="fas fa-phone-alt text-green-600"></i><span>{{ phone }}</span></div>
                     </div>
-                    
-                    <div class="text-center">
-                        <button type="button" id="resendBtn" 
-                                class="text-sm text-green-600 hover:text-green-700 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                disabled>
-                            <i class="fas fa-redo-alt mr-1"></i> Resend Code
+
+                    {% if messages %}
+                        <div class="mb-5 space-y-2">
+                            {% for message in messages %}
+                                <div class="rounded-2xl px-4 py-3 text-sm {% if message.tags == 'error' %}bg-red-50 border border-red-100 text-red-700{% else %}bg-green-50 border border-green-100 text-green-800{% endif %}">{{ message }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <form method="post" action="{% url 'accounts:farmer_verify_otp' %}" class="space-y-5">
+                        {% csrf_token %}
+                        {% if form.non_field_errors %}<div class="rounded-2xl bg-red-50 border border-red-100 text-red-700 px-4 py-3 text-sm">{{ form.non_field_errors }}</div>{% endif %}
+
+                        {% for field in form %}
+                            <div>
+                                <label for="{{ field.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-1.5">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.errors %}<p class="mt-1.5 text-xs text-red-600">{{ field.errors.0 }}</p>{% endif %}
+                            </div>
+                        {% endfor %}
+
+                        <div class="rounded-2xl bg-gray-50 border border-gray-100 p-4">
+                            <div class="flex items-center justify-between gap-4 text-sm">
+                                <div><p class="text-gray-500">Code expires in</p><p class="text-xs text-gray-400 mt-1">Request a new code after the timer ends.</p></div>
+                                <span class="font-mono font-bold text-green-600 bg-green-100 px-4 py-2 rounded-xl" id="timerDisplay">05:00</span>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full rounded-2xl bg-gradient-to-r from-green-700 via-green-600 to-emerald-500 px-4 py-4 text-white font-semibold shadow-xl hover:shadow-2xl transition-all">Verify OTP</button>
+                    </form>
+
+                    <form method="post" action="{% url 'accounts:farmer_resend_otp' %}" class="mt-4 text-center">
+                        {% csrf_token %}
+                        <button type="submit" id="resendBtn" class="inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm text-green-700 font-semibold hover:bg-green-50 transition disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                            <i class="fas fa-redo-alt"></i> Resend Code
                         </button>
-                    </div>
+                    </form>
                 </div>
-                
-                <!-- Submit Button -->
-                <button type="submit" 
-                        class="group relative w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-green-700 to-green-600 px-4 py-3.5 text-white font-semibold shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300">
-                    <i class="fas fa-check-circle text-sm group-hover:scale-110 transition-transform"></i>
-                    <span>Verify OTP</span>
-                </button>
-            </form>
-            
-            <!-- Help Text -->
-            <div class="mt-6 pt-4 border-t border-gray-100 text-center">
-                <p class="text-xs text-gray-400">
-                    <i class="fas fa-question-circle mr-1"></i>
-                    Didn't receive the code? Check your SMS inbox or request a new code after the timer ends.
-                </p>
             </div>
-        </div>
-        
-        <!-- Back to Login Link -->
-        <div class="text-center mt-6">
-            <a href="{% url 'accounts:farmer_login' %}" 
-               class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-green-600 transition-colors">
-                <i class="fas fa-arrow-left text-xs"></i>
-                Back to Login
-            </a>
         </div>
     </div>
 </div>
-
 <script>
-    // OTP Timer Functionality (2 minutes = 120 seconds)
-    let timeLeft = 120;
-    const timerDisplay = document.getElementById('timerDisplay');
-    const resendBtn = document.getElementById('resendBtn');
-    let timerInterval = null;
-    
-    function formatTime(seconds) {
-        const mins = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    }
-    
-    function updateTimerDisplay() {
-        if (timerDisplay) {
-            timerDisplay.textContent = formatTime(timeLeft);
-        }
-    }
-    
-    function startTimer() {
-        if (timerInterval) clearInterval(timerInterval);
-        
-        timerInterval = setInterval(() => {
-            if (timeLeft <= 1) {
-                // Timer expired
-                clearInterval(timerInterval);
-                timerInterval = null;
-                if (resendBtn) {
-                    resendBtn.disabled = false;
-                    resendBtn.classList.add('text-green-600', 'hover:text-green-700');
-                }
-                if (timerDisplay) {
-                    timerDisplay.classList.remove('bg-green-50', 'text-green-600');
-                    timerDisplay.classList.add('bg-red-50', 'text-red-600');
-                }
-                timeLeft = 0;
-                updateTimerDisplay();
-            } else {
-                timeLeft--;
-                updateTimerDisplay();
-            }
-        }, 1000);
-    }
-    
-    // Initialize timer
-    startTimer();
-    
-    // Resend OTP functionality
-    if (resendBtn) {
-        resendBtn.addEventListener('click', async function(e) {
-            e.preventDefault();
-            
-            // Disable button immediately
-            resendBtn.disabled = true;
-            resendBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Sending...';
-            
-            try {
-                const response = await fetch("{% url 'accounts:farmer_resend_otp' %}", {
-                    method: "POST",
-                    headers: {
-                        "X-Requested-With": "XMLHttpRequest",
-                        "X-CSRFToken": getCookie("csrftoken"),
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        phone: "{{ phone }}"
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    // Reset timer
-                    timeLeft = 120;
-                    updateTimerDisplay();
-                    startTimer();
-                    
-                    // Show success toast
-                    if (typeof showToast === 'function') {
-                        showToast(data.message || "New OTP sent successfully!", "success");
-                    } else {
-                        const successBox = document.querySelector('.ajax-success');
-                        if (successBox) {
-                            successBox.innerHTML = `<div class="rounded-xl bg-green-50 border border-green-200 text-green-800 px-4 py-3 flex items-center gap-2">
-                                <i class="fas fa-check-circle text-green-500"></i>
-                                <span>${data.message || "New OTP sent successfully!"}</span>
-                            </div>`;
-                            setTimeout(() => {
-                                successBox.innerHTML = '';
-                            }, 5000);
-                        }
-                    }
-                    
-                    // Reset button text after short delay
-                    setTimeout(() => {
-                        resendBtn.innerHTML = '<i class="fas fa-redo-alt mr-1"></i> Resend Code';
-                        resendBtn.disabled = true;
-                    }, 1000);
-                    
-                    // Reset timer display styling
-                    if (timerDisplay) {
-                        timerDisplay.classList.remove('bg-red-50', 'text-red-600');
-                        timerDisplay.classList.add('bg-green-50', 'text-green-600');
-                    }
-                } else {
-                    // Show error
-                    if (typeof showToast === 'function') {
-                        showToast(data.error || "Failed to resend OTP. Please try again.", "error");
-                    }
-                    resendBtn.disabled = false;
-                    resendBtn.innerHTML = '<i class="fas fa-redo-alt mr-1"></i> Resend Code';
-                }
-            } catch (err) {
-                console.error("Resend error:", err);
-                if (typeof showToast === 'function') {
-                    showToast("Network error. Please try again.", "error");
-                }
-                resendBtn.disabled = false;
-                resendBtn.innerHTML = '<i class="fas fa-redo-alt mr-1"></i> Resend Code';
-            }
-        });
-    }
-    
-    // Optional: Auto-focus first input field
-    document.addEventListener('DOMContentLoaded', function() {
-        const firstInput = document.querySelector('input[type="text"], input[type="tel"], input[name="otp"]');
-        if (firstInput) {
-            firstInput.focus();
-        }
-    });
+let timeLeft = 300;
+const timerDisplay = document.getElementById('timerDisplay');
+const resendBtn = document.getElementById('resendBtn');
+function formatTime(seconds) { const m = Math.floor(seconds / 60); const s = seconds % 60; return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`; }
+const timer = setInterval(() => {
+    timeLeft -= 1;
+    if (timerDisplay) timerDisplay.textContent = formatTime(Math.max(timeLeft, 0));
+    if (timeLeft <= 0) { clearInterval(timer); if (resendBtn) resendBtn.disabled = false; }
+}, 1000);
+document.addEventListener('DOMContentLoaded', () => { const code = document.getElementById('id_code'); if (code) code.focus(); });
 </script>
-{% endblock %}
-
-{% block extra_css %}
 <style>
-    /* OTP input field styling - improve if form_fields uses specific classes */
-    input[name="otp"], input[id*="otp"] {
-        letter-spacing: 2px;
-        font-size: 1.25rem;
-        text-align: center;
-        font-family: monospace;
-    }
-    
-    /* Smooth timer transition */
-    #timerDisplay {
-        transition: all 0.3s ease;
-    }
-    
-    /* Card hover enhancements */
-    .bg-white.rounded-2xl {
-        transition: transform 0.2s, box-shadow 0.2s;
-    }
-    
-    .bg-white.rounded-2xl:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 25px 35px -12px rgba(0, 0, 0, 0.1);
-    }
+input, select, textarea { width:100%; padding:14px 16px; border:1px solid #e5e7eb; border-radius:16px; outline:none; margin-top:6px; background:#f9fafb; transition:all .25s ease; }
+input:focus, select:focus, textarea:focus { background:#fff; border-color:#16a34a; box-shadow:0 0 0 4px rgba(22,163,74,.12); }
+#id_code { letter-spacing:6px; font-size:1.3rem; text-align:center; font-family:monospace; font-weight:700; }
 </style>
 {% endblock %}

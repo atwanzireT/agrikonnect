@@ -1,4 +1,4 @@
-# Generated for AgriKonnect marketplace map pins
+# Generated for AgroSync marketplace map pins
 from django.db import migrations, models
 
 

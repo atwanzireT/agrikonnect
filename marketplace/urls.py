@@ -11,6 +11,7 @@ urlpatterns = [
     path("listings/<uuid:pk>/", views.listing_detail, name="listing_detail"),
     path("listings/<uuid:pk>/images/upload/", views.listing_image_upload, name="listing_image_upload"),
     path("listings/<uuid:pk>/inquiry/", views.inquiry_create, name="inquiry_create"),
+    path("listings/<uuid:pk>/purchase/", views.purchase_create, name="purchase_create"),
 
     path("buyer-requests/", views.buyer_request_list, name="buyer_request_list"),
     path("buyer-requests/create/", views.buyer_request_create, name="buyer_request_create"),

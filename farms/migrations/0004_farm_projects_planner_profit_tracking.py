@@ -1,4 +1,4 @@
-# Generated for AgriKonnect project planner and profit tracking upgrade
+# Generated for AgroSync project planner and profit tracking upgrade
 
 from django.conf import settings
 from django.db import migrations, models

@@ -164,3 +164,42 @@ class BuyerRequestImage(BaseModel):
 
     def __str__(self):
         return f"Image for {self.buyer_request}"
+
+class PurchaseStatusChoices(models.TextChoices):
+    PENDING = "pending", "Pending"
+    CONFIRMED = "confirmed", "Confirmed"
+    CANCELLED = "cancelled", "Cancelled"
+    COMPLETED = "completed", "Completed"
+
+
+class MarketplacePurchase(BaseModel):
+    listing = models.ForeignKey(
+        ProduceListing,
+        on_delete=models.CASCADE,
+        related_name="purchases"
+    )
+    buyer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="marketplace_purchases"
+    )
+    quantity = models.DecimalField(max_digits=12, decimal_places=2)
+    unit_price = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True)
+    total_amount = models.DecimalField(max_digits=14, decimal_places=2, blank=True, null=True)
+    delivery_location = models.CharField(max_length=255, blank=True, null=True)
+    buyer_phone = models.CharField(max_length=20, blank=True, null=True)
+    notes = models.TextField(blank=True, null=True)
+    status = models.CharField(max_length=20, choices=PurchaseStatusChoices.choices, default=PurchaseStatusChoices.PENDING)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def save(self, *args, **kwargs):
+        if self.unit_price is None:
+            self.unit_price = self.listing.expected_price
+        if self.unit_price is not None and self.quantity is not None:
+            self.total_amount = self.quantity * self.unit_price
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Purchase request for {self.listing} by {self.buyer}"

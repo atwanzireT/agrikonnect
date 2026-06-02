@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Business Signup | AgriKonnect</title>
+    <title>Business Signup | AgroSync</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -13,19 +13,21 @@
         select,
         textarea {
             width: 100%;
-            padding: 12px 14px;
-            border: 1px solid #d1d5db;
-            border-radius: 12px;
+            padding: 14px 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
             outline: none;
             margin-top: 6px;
-            background: #ffffff;
+            background: #f9fafb;
+            transition: all 0.25s ease;
         }
 
         input:focus,
         select:focus,
         textarea:focus {
+            background: #ffffff;
             border-color: #16a34a;
-            box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
+            box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.12);
         }
 
         label {
@@ -37,66 +39,112 @@
         .errorlist {
             color: #dc2626;
             font-size: 13px;
-            margin-top: 5px;
+            margin-top: 6px;
             list-style: none;
             padding-left: 0;
         }
     </style>
 </head>
 
-<body class="bg-gray-100">
+<body class="bg-gradient-to-br from-slate-50 via-green-50 to-emerald-50">
 
-<div class="min-h-screen flex items-center justify-center px-4 py-8">
+<div class="min-h-screen flex items-center justify-center px-4 py-10">
 
-    <div class="w-full max-w-6xl bg-white rounded-3xl shadow-2xl overflow-hidden">
+    <div class="w-full max-w-7xl bg-white/90 backdrop-blur-lg rounded-[32px] shadow-[0_20px_60px_rgba(0,0,0,0.12)] border border-white overflow-hidden">
 
-        <div class="grid grid-cols-1 md:grid-cols-2">
+        <div class="grid grid-cols-1 lg:grid-cols-2">
 
-            <div class="bg-green-700 p-10 text-white">
+            <!-- Branding Section -->
+            <div class="relative bg-gradient-to-br from-green-800 via-emerald-700 to-green-500 p-8 sm:p-10 text-white overflow-hidden">
 
-                <h1 class="text-4xl font-bold">
-                    AgriKonnect
-                </h1>
+                <div class="absolute top-0 right-0 w-72 h-72 bg-white/10 rounded-full blur-3xl"></div>
+                <div class="absolute bottom-0 left-0 w-56 h-56 bg-black/10 rounded-full blur-3xl"></div>
 
-                <p class="mt-4 text-green-100 text-lg">
-                    Create your business account and connect directly with farmers.
-                </p>
+                <div class="relative z-10 h-full flex flex-col justify-between">
 
-                <div class="mt-10 space-y-4">
+                    <div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center text-2xl font-bold">
+                                A
+                            </div>
 
-                    <div class="bg-green-600/80 rounded-2xl p-5">
-                        <h3 class="font-bold text-lg">Post Demands</h3>
-                        <p class="text-green-100 text-sm mt-1">
-                            Tell farmers what products your business wants to buy.
+                            <div>
+                                <h1 class="text-3xl font-bold">
+                                    AgroSync
+                                </h1>
+                                <p class="text-green-100 text-sm">
+                                    Smart Agricultural Marketplace
+                                </p>
+                            </div>
+                        </div>
+
+                        <h2 class="mt-10 text-4xl font-bold leading-tight">
+                            Connect Farmers,<br>
+                            Buyers & Businesses.
+                        </h2>
+
+                        <p class="mt-5 text-green-100 text-lg leading-8">
+                            Create your business account and access a smarter marketplace
+                            for agricultural products, farmer connections, product demands,
+                            and secure trade opportunities.
                         </p>
+
+                        <div class="grid grid-cols-3 gap-4 mt-10">
+                            <div class="bg-white/10 backdrop-blur rounded-2xl p-4">
+                                <div class="text-2xl font-bold">500+</div>
+                                <div class="text-xs text-green-100">Farmers</div>
+                            </div>
+
+                            <div class="bg-white/10 backdrop-blur rounded-2xl p-4">
+                                <div class="text-2xl font-bold">50+</div>
+                                <div class="text-xs text-green-100">Buyers</div>
+                            </div>
+
+                            <div class="bg-white/10 backdrop-blur rounded-2xl p-4">
+                                <div class="text-2xl font-bold">24/7</div>
+                                <div class="text-xs text-green-100">Market</div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="bg-green-600/80 rounded-2xl p-5">
-                        <h3 class="font-bold text-lg">Find Farmers</h3>
-                        <p class="text-green-100 text-sm mt-1">
-                            Discover farmers by crop, price, location, and quantity.
-                        </p>
-                    </div>
+                    <div class="mt-10 space-y-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-3 h-3 bg-green-300 rounded-full"></div>
+                            <span class="text-green-50">Post product demands instantly</span>
+                        </div>
 
-                    <div class="bg-green-600/80 rounded-2xl p-5">
-                        <h3 class="font-bold text-lg">Use the Map</h3>
-                        <p class="text-green-100 text-sm mt-1">
-                            View farmer and buyer pins on an interactive marketplace map.
-                        </p>
+                        <div class="flex items-center gap-3">
+                            <div class="w-3 h-3 bg-green-300 rounded-full"></div>
+                            <span class="text-green-50">Find farmers by crop, price, location and quantity</span>
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <div class="w-3 h-3 bg-green-300 rounded-full"></div>
+                            <span class="text-green-50">Use the interactive marketplace map</span>
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <div class="w-3 h-3 bg-green-300 rounded-full"></div>
+                            <span class="text-green-50">Manage secure buyer and supplier connections</span>
+                        </div>
                     </div>
 
                 </div>
-
             </div>
 
-            <div class="p-8 md:p-10">
+            <!-- Signup Form Section -->
+            <div class="p-6 sm:p-8 lg:p-10 xl:p-12">
 
                 <div class="mb-8">
-                    <h2 class="text-3xl font-bold text-gray-900">
-                        Business Signup
+                    <span class="inline-flex items-center rounded-full bg-green-50 px-4 py-1.5 text-xs font-bold text-green-700 ring-1 ring-green-100">
+                        Business Portal
+                    </span>
+
+                    <h2 class="mt-5 text-3xl sm:text-4xl font-bold text-gray-900">
+                        Create Business Account
                     </h2>
 
-                    <p class="text-gray-500 mt-2">
+                    <p class="text-gray-500 mt-3 leading-7">
                         Register your company, shop, cooperative, processor, exporter, or buyer account.
                     </p>
                 </div>
@@ -104,7 +152,7 @@
                 {% if messages %}
                     <div class="mb-5 space-y-2">
                         {% for message in messages %}
-                            <div class="p-4 rounded-xl bg-green-100 text-green-800 text-sm">
+                            <div class="p-4 rounded-2xl bg-green-50 border border-green-100 text-green-800 text-sm">
                                 {{ message }}
                             </div>
                         {% endfor %}
@@ -112,18 +160,17 @@
                 {% endif %}
 
                 {% if form.non_field_errors %}
-                    <div class="mb-5 p-4 rounded-xl bg-red-100 text-red-700 text-sm">
+                    <div class="mb-5 p-4 rounded-2xl bg-red-50 border border-red-100 text-red-700 text-sm">
                         {{ form.non_field_errors }}
                     </div>
                 {% endif %}
 
-                <form method="POST" class="space-y-5">
+                <form method="POST" class="space-y-6">
                     {% csrf_token %}
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
 
                         {% for field in form %}
-
                             <div class="{% if field.name == 'address' or field.name == 'description' or field.name == 'business_description' %}md:col-span-2{% endif %}">
 
                                 <label for="{{ field.id_for_label }}">
@@ -133,7 +180,7 @@
                                 {{ field }}
 
                                 {% if field.help_text %}
-                                    <p class="text-xs text-gray-500 mt-1">
+                                    <p class="text-xs text-gray-500 mt-1.5">
                                         {{ field.help_text }}
                                     </p>
                                 {% endif %}
@@ -143,32 +190,30 @@
                                 {% endif %}
 
                             </div>
-
                         {% endfor %}
 
                     </div>
 
                     <button type="submit"
-                            class="w-full bg-green-700 hover:bg-green-800 text-white py-4 rounded-2xl font-bold transition">
+                            class="w-full py-4 rounded-2xl font-semibold text-white bg-gradient-to-r from-green-700 to-emerald-600 hover:from-green-800 hover:to-emerald-700 shadow-lg hover:shadow-xl transition-all duration-300">
                         Create Business Account
                     </button>
-
                 </form>
 
-                <div class="text-center mt-6 text-sm text-gray-600">
-                    Already registered?
-
-                    <a href="{% url 'accounts:business_login' %}"
-                       class="text-green-700 font-bold hover:underline">
-                        Login here
-                    </a>
+                <div class="mt-8 flex items-center gap-3">
+                    <div class="h-px flex-1 bg-gray-200"></div>
+                    <span class="text-xs text-gray-400">or continue with another account</span>
+                    <div class="h-px flex-1 bg-gray-200"></div>
                 </div>
 
-                <div class="text-center mt-3 text-sm text-gray-600">
-                    Are you a farmer?
+                <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4 text-center text-sm">
+                    <a href="{% url 'accounts:business_login' %}"
+                       class="rounded-2xl border border-gray-200 px-4 py-3 font-semibold text-gray-700 hover:border-green-200 hover:bg-green-50 hover:text-green-700 transition">
+                        Already registered? Login
+                    </a>
 
-                    <a href="{% url 'accounts:farmer_signup' %}"
-                       class="text-green-700 font-bold hover:underline">
+                    <a href="{% url 'accounts:farmer_request_otp' %}"
+                       class="rounded-2xl border border-gray-200 px-4 py-3 font-semibold text-gray-700 hover:border-green-200 hover:bg-green-50 hover:text-green-700 transition">
                         Create farmer account
                     </a>
                 </div>

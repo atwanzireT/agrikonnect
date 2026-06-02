@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Business Login{% endblock %}
+{% block title %}Business Login | AgroSync{% endblock %}
 
 {% block content %}
 
@@ -9,29 +9,180 @@
 </script>
 {% endif %}
 
-<div class="max-w-md mx-auto bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-    <h1 class="text-2xl font-bold text-gray-900 mb-2">Business Login</h1>
-    <p class="text-sm text-gray-600 mb-6">Login with your email and password.</p>
+<style>
+    input,
+    select,
+    textarea {
+        width: 100%;
+        padding: 14px 16px;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        outline: none;
+        margin-top: 6px;
+        background: #f9fafb;
+        transition: all 0.25s ease;
+    }
 
-    <form method="post" action="{% url 'accounts:business_login' %}" class="space-y-4">
-        {% csrf_token %}
+    input:focus,
+    select:focus,
+    textarea:focus {
+        background: #ffffff;
+        border-color: #16a34a;
+        box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.12);
+    }
 
-        {% include "partials/form_errors.html" %}
-        {% include "partials/form_fields.html" %}
+    label {
+        font-weight: 600;
+        color: #374151;
+        font-size: 14px;
+    }
 
-        <button type="submit"
-                class="w-full rounded-lg bg-green-700 px-4 py-3 text-white font-semibold hover:bg-green-800">
-            Login
-        </button>
-    </form>
+    .errorlist {
+        color: #dc2626;
+        font-size: 13px;
+        margin-top: 6px;
+        list-style: none;
+        padding-left: 0;
+    }
+</style>
 
-    <p class="mt-4 text-sm text-gray-600">
-        No account yet?
-        <a href="{% url 'accounts:business_signup' %}"
-           class="text-green-700 font-medium hover:underline">
-            Register business
-        </a>
-    </p>
+<div class="min-h-[85vh] flex items-center justify-center px-4 py-10 bg-gradient-to-br from-slate-50 via-green-50 to-emerald-50">
+
+    <div class="w-full max-w-6xl bg-white/90 backdrop-blur-lg rounded-[32px] shadow-[0_20px_60px_rgba(0,0,0,0.12)] border border-white overflow-hidden">
+
+        <div class="grid grid-cols-1 lg:grid-cols-2">
+
+            <!-- Branding Section -->
+            <div class="relative hidden lg:flex bg-gradient-to-br from-green-800 via-emerald-700 to-green-500 p-10 text-white overflow-hidden">
+
+                <div class="absolute top-0 right-0 w-72 h-72 bg-white/10 rounded-full blur-3xl"></div>
+                <div class="absolute bottom-0 left-0 w-56 h-56 bg-black/10 rounded-full blur-3xl"></div>
+
+                <div class="relative z-10 flex flex-col justify-between w-full">
+
+                    <div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center text-2xl font-bold">
+                                A
+                            </div>
+
+                            <div>
+                                <h1 class="text-3xl font-bold">
+                                    AgroSync
+                                </h1>
+                                <p class="text-green-100 text-sm">
+                                    Smart Agricultural Marketplace
+                                </p>
+                            </div>
+                        </div>
+
+                        <h2 class="mt-10 text-4xl font-bold leading-tight">
+                            Welcome back,<br>
+                            Business Partner.
+                        </h2>
+
+                        <p class="mt-5 text-green-100 text-lg leading-8">
+                            Access your business dashboard, manage product demands,
+                            view market products, connect with farmers, and track
+                            agricultural opportunities from one platform.
+                        </p>
+
+                        <div class="grid grid-cols-3 gap-4 mt-10">
+                            <div class="bg-white/10 backdrop-blur rounded-2xl p-4">
+                                <div class="text-2xl font-bold">24/7</div>
+                                <div class="text-xs text-green-100">Market</div>
+                            </div>
+
+                            <div class="bg-white/10 backdrop-blur rounded-2xl p-4">
+                                <div class="text-2xl font-bold">Secure</div>
+                                <div class="text-xs text-green-100">Login</div>
+                            </div>
+
+                            <div class="bg-white/10 backdrop-blur rounded-2xl p-4">
+                                <div class="text-2xl font-bold">Live</div>
+                                <div class="text-xs text-green-100">Products</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-10 space-y-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-3 h-3 bg-green-300 rounded-full"></div>
+                            <span class="text-green-50">View market products after login</span>
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <div class="w-3 h-3 bg-green-300 rounded-full"></div>
+                            <span class="text-green-50">Post buyer demands and purchase requests</span>
+                        </div>
+
+                        <div class="flex items-center gap-3">
+                            <div class="w-3 h-3 bg-green-300 rounded-full"></div>
+                            <span class="text-green-50">Connect with farmers and suppliers</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Login Form Section -->
+            <div class="p-6 sm:p-8 lg:p-10 xl:p-12">
+
+                <div class="mb-8">
+                    <span class="inline-flex items-center rounded-full bg-green-50 px-4 py-1.5 text-xs font-bold text-green-700 ring-1 ring-green-100">
+                        Business Portal
+                    </span>
+
+                    <h2 class="mt-5 text-3xl sm:text-4xl font-bold text-gray-900">
+                        Sign in to your account
+                    </h2>
+
+                    <p class="text-gray-500 mt-3 leading-7">
+                        Enter your email and password to continue to your AgroSync dashboard.
+                    </p>
+                </div>
+
+                <form method="post" action="{% url 'accounts:business_login' %}" class="space-y-6">
+                    {% csrf_token %}
+
+                    <div>
+                        {% include "partials/form_errors.html" %}
+                    </div>
+
+                    <div class="space-y-5">
+                        {% include "partials/form_fields.html" %}
+                    </div>
+
+                    <button type="submit"
+                            class="w-full py-4 rounded-2xl font-semibold text-white bg-gradient-to-r from-green-700 to-emerald-600 hover:from-green-800 hover:to-emerald-700 shadow-lg hover:shadow-xl transition-all duration-300">
+                        Login to Business Portal
+                    </button>
+                </form>
+
+                <div class="mt-8 flex items-center gap-3">
+                    <div class="h-px flex-1 bg-gray-200"></div>
+                    <span class="text-xs text-gray-400">New to AgroSync?</span>
+                    <div class="h-px flex-1 bg-gray-200"></div>
+                </div>
+
+                <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4 text-center text-sm">
+                    <a href="{% url 'accounts:business_signup' %}"
+                       class="rounded-2xl border border-gray-200 px-4 py-3 font-semibold text-gray-700 hover:border-green-200 hover:bg-green-50 hover:text-green-700 transition">
+                        Register Business
+                    </a>
+
+                    <a href="{% url 'accounts:farmer_request_otp' %}"
+                       class="rounded-2xl border border-gray-200 px-4 py-3 font-semibold text-gray-700 hover:border-green-200 hover:bg-green-50 hover:text-green-700 transition">
+                        Create Farmer Account
+                    </a>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
 </div>
 
 {% endblock %}

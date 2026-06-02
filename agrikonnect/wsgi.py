@@ -1,5 +1,5 @@
 """
-WSGI config for agrikonnect project.
+WSGI config for agrosync project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 

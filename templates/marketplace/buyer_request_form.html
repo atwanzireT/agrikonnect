@@ -1,73 +1,148 @@
 {% extends "base.html" %}
-{% block title %}{{ title|default:"Buyer Request" }}{% endblock %}
+{% block title %}{{ title|default:"Buyer Request" }} | AgroSync{% endblock %}
 
 {% block content %}
 
-<div class="max-w-3xl mx-auto bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+<div class="max-w-6xl mx-auto">
 
-    <h1 class="text-2xl font-bold mb-2">
-        {{ title|default:"Post Buyer Request" }}
-    </h1>
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold text-gray-900">
+            {{ title|default:"Post Buyer Request" }}
+        </h1>
+        <p class="text-gray-500 mt-2">
+            Fill in what your business wants to buy. Your location will be detected automatically.
+        </p>
+    </div>
 
-    <p class="text-sm text-gray-600 mb-6">
-        Post what your business wants to buy. Your latitude and longitude will be fetched automatically.
-    </p>
+    <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 sm:p-8">
 
-    <form method="post"
-          enctype="multipart/form-data"
-          action="{% url 'marketplace:buyer_request_create' %}"
-          class="space-y-4">
+        <form method="post"
+              enctype="multipart/form-data"
+              action="{% url 'marketplace:buyer_request_create' %}"
+              class="space-y-6">
 
-        {% csrf_token %}
+            {% csrf_token %}
 
-        {% include "partials/form_errors.html" %}
-        {% include "partials/form_fields.html" %}
+            {% include "partials/form_errors.html" %}
 
-        <div class="rounded-xl bg-green-50 border border-green-200 p-4">
-            <p class="text-sm font-semibold text-green-800">
-                Location Status
-            </p>
+            <!-- Request Details -->
+            <div>
+                <h2 class="text-lg font-bold text-gray-900 mb-4">
+                    Request Details
+                </h2>
 
-            <p id="locationStatus" class="text-sm text-green-700 mt-1">
-                Fetching your current location...
-            </p>
-        </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    {% include "partials/form_fields.html" %}
+                </div>
+            </div>
 
-        <div class="flex flex-col sm:flex-row gap-3">
-            <button type="button"
-                    onclick="fetchLocation()"
-                    class="rounded-lg bg-gray-900 px-5 py-3 text-white font-semibold hover:bg-black">
-                Refresh Location
-            </button>
+            <!-- Location Status -->
+            <div id="locationCard" class="rounded-2xl bg-green-50 border border-green-100 p-4">
+                <div class="flex items-start gap-3">
+                    <div id="locationIcon" class="w-10 h-10 rounded-xl bg-green-100 text-green-700 flex items-center justify-center">
+                        <i class="fas fa-location-crosshairs"></i>
+                    </div>
 
-            <button type="submit"
-                    class="rounded-lg bg-green-700 px-5 py-3 text-white font-semibold hover:bg-green-800">
-                Save Buyer Request
-            </button>
-        </div>
+                    <div class="flex-1">
+                        <p class="font-semibold text-green-800 text-sm">
+                            Location
+                        </p>
 
-    </form>
+                        <p id="locationStatus" class="text-sm text-green-700 mt-1">
+                            Fetching your current location...
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                <button type="button"
+                        onclick="fetchLocation()"
+                        class="rounded-2xl border border-gray-200 bg-white px-5 py-3 text-gray-700 font-semibold hover:bg-gray-50">
+                    Refresh Location
+                </button>
+
+                <button type="submit"
+                        class="flex-1 rounded-2xl bg-green-700 px-5 py-3 text-white font-bold hover:bg-green-800">
+                    Save Buyer Request
+                </button>
+            </div>
+
+        </form>
+
+    </div>
 
 </div>
+
+<style>
+    input,
+    select,
+    textarea {
+        width: 100%;
+        padding: 13px 15px;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        outline: none;
+        background: #f9fafb;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+        background: white;
+        border-color: #16a34a;
+        box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.12);
+    }
+
+    label {
+        font-weight: 600;
+        color: #374151;
+        font-size: 14px;
+    }
+
+    .errorlist {
+        list-style: none;
+        padding-left: 0;
+        color: #dc2626;
+        font-size: 13px;
+        margin-top: 6px;
+    }
+</style>
 
 <script>
     function setValue(name, value) {
         const input = document.querySelector(`[name="${name}"]`);
-        if (input) {
-            input.value = value;
+        if (input) input.value = value;
+    }
+
+    function setLocationStatus(type, message) {
+        const card = document.getElementById("locationCard");
+        const icon = document.getElementById("locationIcon");
+        const status = document.getElementById("locationStatus");
+
+        status.innerText = message;
+
+        if (type === "success") {
+            card.className = "rounded-2xl bg-green-50 border border-green-100 p-4";
+            icon.className = "w-10 h-10 rounded-xl bg-green-100 text-green-700 flex items-center justify-center";
+            icon.innerHTML = '<i class="fas fa-check-circle"></i>';
+            status.className = "text-sm text-green-700 mt-1";
+        } else if (type === "error") {
+            card.className = "rounded-2xl bg-red-50 border border-red-100 p-4";
+            icon.className = "w-10 h-10 rounded-xl bg-red-100 text-red-700 flex items-center justify-center";
+            icon.innerHTML = '<i class="fas fa-triangle-exclamation"></i>';
+            status.className = "text-sm text-red-700 mt-1";
         }
     }
 
     function fetchLocation() {
-        const status = document.getElementById("locationStatus");
-
         if (!navigator.geolocation) {
-            status.innerText = "Your browser does not support location detection.";
-            status.className = "text-sm text-red-700 mt-1";
+            setLocationStatus("error", "Your browser does not support location detection.");
             return;
         }
 
-        status.innerText = "Requesting location permission...";
+        setLocationStatus("success", "Requesting location permission...");
 
         navigator.geolocation.getCurrentPosition(
             function (position) {
@@ -77,22 +152,10 @@
                 setValue("latitude", latitude);
                 setValue("longitude", longitude);
 
-                status.innerText = `Location detected: ${latitude}, ${longitude}`;
-                status.className = "text-sm text-green-700 mt-1";
+                setLocationStatus("success", "Location detected successfully.");
             },
-            function (error) {
-                let message = "Unable to get location.";
-
-                if (error.code === error.PERMISSION_DENIED) {
-                    message = "Location permission denied. Please allow location access in your browser.";
-                } else if (error.code === error.POSITION_UNAVAILABLE) {
-                    message = "Location information is unavailable.";
-                } else if (error.code === error.TIMEOUT) {
-                    message = "Location request timed out. Try again.";
-                }
-
-                status.innerText = message;
-                status.className = "text-sm text-red-700 mt-1";
+            function () {
+                setLocationStatus("error", "Could not detect location. You can still save if location is optional.");
             },
             {
                 enableHighAccuracy: true,

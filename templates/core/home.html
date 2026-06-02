@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}AgriKonnect - Smart Agriculture Platform{% endblock %}
+{% block title %}AgroSync - Smart Agriculture Platform{% endblock %}
 
 {% block page_header %}{% endblock %}
 
@@ -33,7 +33,7 @@
                 </h1>
 
                 <p class="text-xl text-gray-600 leading-relaxed max-w-lg">
-                    AgriKonnect bridges the gap between farmers and buyers with intelligent farm management,
+                    AgroSync bridges the gap between farmers and buyers with intelligent farm management,
                     real-time market insights, and seamless trade opportunities.
                 </p>
 
@@ -295,7 +295,7 @@
     <div class="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div class="max-w-4xl mx-auto text-center">
             <h2 class="text-4xl md:text-5xl font-bold text-white font-serif-alt mb-6">Ready to Transform Your Agricultural Journey?</h2>
-            <p class="text-xl text-green-100 mb-10">Join thousands of farmers and businesses already using AgriKonnect to grow smarter</p>
+            <p class="text-xl text-green-100 mb-10">Join thousands of farmers and businesses already using AgroSync to grow smarter</p>
             {% if not request.user.is_authenticated %}
             <div class="flex flex-wrap gap-5 justify-center">
                 <a href="{% url 'accounts:farmer_request_otp' %}" class="group inline-flex items-center gap-3 rounded-2xl bg-white px-10 py-4 text-green-700 font-bold text-lg shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105">

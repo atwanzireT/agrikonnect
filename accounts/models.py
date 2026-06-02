@@ -7,6 +7,7 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseU
 class AccountTypeChoices(models.TextChoices):
     FARMER = "farmer", "Farmer"
     BUSINESS = "business", "Business"
+    GUEST = "guest", "Guest"
     ADMIN = "admin", "Admin"
 
 

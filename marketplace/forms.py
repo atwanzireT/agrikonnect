@@ -5,6 +5,7 @@ from .models import (
     ListingInquiry,
     BuyerRequest,
     BuyerRequestImage,
+    MarketplacePurchase,
 )
 from farms.models import Farm
 from core.forms import apply_tailwind_classes
@@ -97,6 +98,16 @@ class BuyerRequestImageForm(forms.ModelForm):
     class Meta:
         model = BuyerRequestImage
         fields = ["image", "is_primary", "sort_order"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        apply_tailwind_classes(self)
+
+class MarketplacePurchaseForm(forms.ModelForm):
+    class Meta:
+        model = MarketplacePurchase
+        fields = ["quantity", "delivery_location", "buyer_phone", "notes"]
+        widgets = {"notes": forms.Textarea(attrs={"rows": 3})}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

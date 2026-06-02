@@ -1,25 +1,226 @@
 {% extends "base.html" %}
-{% block title %}Produce Listings{% endblock %}
+{% block title %}Marketplace Products | AgroSync{% endblock %}
+{% block page_title %}{% endblock %}
+{% block page_subtitle %}{% endblock %}
 
 {% block content %}
-<div class="flex items-center justify-between mb-6">
-    <h1 class="text-2xl font-bold">Produce Listings</h1>
-    <a href="{% url 'marketplace:listing_create' %}" class="rounded-lg bg-green-700 px-4 py-2 text-white hover:bg-green-800">Add Listing</a>
+
+<div class="space-y-8">
+
+    <!-- Hero -->
+    <section class="relative overflow-hidden rounded-[32px] bg-gradient-to-br from-green-900 via-green-800 to-emerald-600 p-6 sm:p-8 lg:p-10 text-white shadow-xl">
+        <div class="absolute -top-24 -right-24 h-80 w-80 rounded-full bg-white/10 blur-3xl"></div>
+        <div class="absolute -bottom-24 -left-24 h-80 w-80 rounded-full bg-black/10 blur-3xl"></div>
+
+        <div class="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-8">
+            <div class="max-w-3xl">
+                <span class="inline-flex rounded-full bg-white/15 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-green-50 ring-1 ring-white/20">
+                    AgroSync Market
+                </span>
+
+                <h1 class="mt-5 text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight">
+                    Marketplace Products
+                </h1>
+
+                <p class="mt-4 max-w-2xl text-green-50 leading-7">
+                    Browse available farm produce, compare prices, check locations,
+                    and submit purchase requests directly to sellers.
+                </p>
+            </div>
+
+            {% if request.user.account_type != "guest" %}
+                <a href="{% url 'marketplace:listing_create' %}"
+                   class="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-bold text-green-800 shadow-lg hover:bg-green-50 hover:-translate-y-0.5 transition">
+                    <i class="fas fa-plus"></i>
+                    Add Product
+                </a>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Search / Filters -->
+    <section class="rounded-3xl border border-gray-100 bg-white p-5 sm:p-6 shadow-sm">
+        <form method="get" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4">
+
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-1">
+                    Crop or Variety
+                </label>
+                <input type="text"
+                       name="q"
+                       value="{{ request.GET.q }}"
+                       placeholder="e.g. Coffee, Maize"
+                       class="filter-input">
+            </div>
+
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-1">
+                    Location
+                </label>
+                <input type="text"
+                       name="location"
+                       value="{{ request.GET.location }}"
+                       placeholder="District or village"
+                       class="filter-input">
+            </div>
+
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-1">
+                    Min Price
+                </label>
+                <input type="number"
+                       name="min_price"
+                       value="{{ request.GET.min_price }}"
+                       placeholder="UGX"
+                       class="filter-input">
+            </div>
+
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-1">
+                    Max Price
+                </label>
+                <input type="number"
+                       name="max_price"
+                       value="{{ request.GET.max_price }}"
+                       placeholder="UGX"
+                       class="filter-input">
+            </div>
+
+            <div class="flex items-end gap-2">
+                <button class="flex-1 rounded-2xl bg-green-700 px-5 py-3 text-sm font-bold text-white hover:bg-green-800 transition">
+                    <i class="fas fa-filter mr-2"></i>
+                    Filter
+                </button>
+
+                <a href="{% url 'marketplace:listing_list' %}"
+                   class="rounded-2xl border border-gray-200 px-4 py-3 text-sm font-bold text-gray-600 hover:bg-gray-50 transition">
+                    Reset
+                </a>
+            </div>
+
+        </form>
+    </section>
+
+    <!-- Products Grid -->
+    <section>
+        <div class="flex items-center justify-between mb-5">
+            <div>
+                <h2 class="text-2xl font-extrabold text-gray-900">
+                    Available Products
+                </h2>
+                <p class="text-sm text-gray-500 mt-1">
+                    Choose a product to view details or make a purchase request.
+                </p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+
+            {% for listing in listings %}
+                <article class="group overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
+
+                    <!-- Image -->
+                    <div class="relative h-52 bg-gradient-to-br from-green-50 to-emerald-100 overflow-hidden">
+                        {% with first_image=listing.images.first %}
+                            {% if first_image %}
+                                <img src="{{ first_image.image.url }}"
+                                     alt="{{ listing.crop_name }}"
+                                     class="h-full w-full object-cover transition duration-500 group-hover:scale-105">
+                            {% else %}
+                                <div class="flex h-full items-center justify-center text-green-700">
+                                    <i class="fas fa-seedling text-6xl"></i>
+                                </div>
+                            {% endif %}
+                        {% endwith %}
+
+                        <div class="absolute left-4 top-4">
+                            <span class="rounded-full bg-white/90 backdrop-blur px-3 py-1 text-xs font-bold capitalize text-green-700 shadow-sm">
+                                {{ listing.status }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Body -->
+                    <div class="p-5">
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <h3 class="text-xl font-extrabold text-gray-900">
+                                    {{ listing.crop_name }}
+                                </h3>
+
+                                <p class="text-sm text-gray-500 mt-1">
+                                    {{ listing.variety|default:"Standard grade" }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="mt-5 grid grid-cols-2 gap-3 text-sm">
+                            <div class="rounded-2xl bg-gray-50 p-3">
+                                <p class="text-gray-500">Quantity</p>
+                                <p class="font-bold text-gray-900">
+                                    {{ listing.quantity }} {{ listing.unit }}
+                                </p>
+                            </div>
+
+                            <div class="rounded-2xl bg-green-50 p-3">
+                                <p class="text-green-700">Price</p>
+                                <p class="font-bold text-gray-900">
+                                    UGX {{ listing.expected_price|default:"Open" }}
+                                </p>
+                            </div>
+                        </div>
+
+                        <p class="mt-4 flex items-center gap-2 text-sm text-gray-600">
+                            <i class="fas fa-location-dot text-green-600"></i>
+                            {{ listing.village|default:listing.subcounty|default:listing.district }}, {{ listing.district }}
+                        </p>
+
+                        <a href="{% url 'marketplace:listing_detail' listing.pk %}"
+                           class="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gray-900 px-4 py-3 text-sm font-bold text-white hover:bg-green-700 transition">
+                            View & Purchase
+                            <i class="fas fa-arrow-right text-xs"></i>
+                        </a>
+                    </div>
+
+                </article>
+            {% empty %}
+                <div class="col-span-full rounded-3xl border border-dashed border-gray-300 bg-white p-12 text-center">
+                    <div class="mx-auto h-16 w-16 rounded-3xl bg-green-50 text-green-700 flex items-center justify-center">
+                        <i class="fas fa-seedling text-2xl"></i>
+                    </div>
+
+                    <h3 class="mt-4 text-xl font-extrabold text-gray-900">
+                        No products found
+                    </h3>
+
+                    <p class="mt-2 text-sm text-gray-500">
+                        Try changing your filters or check again later.
+                    </p>
+                </div>
+            {% endfor %}
+
+        </div>
+    </section>
+
 </div>
 
-<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-    {% for listing in listings %}
-    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
-        <h2 class="text-xl font-semibold">{{ listing.crop_name }}</h2>
-        <p class="text-sm text-gray-600 mt-1">{{ listing.quantity }} {{ listing.unit }}</p>
-        <p class="text-sm text-gray-600">{{ listing.district }}</p>
-        <p class="text-sm text-gray-600 capitalize">Status: {{ listing.status }}</p>
-        <a href="{% url 'marketplace:listing_detail' listing.pk %}" class="inline-block mt-4 text-green-700 font-medium hover:underline">
-            View Details
-        </a>
-    </div>
-    {% empty %}
-    <p class="text-gray-500">No produce listings available.</p>
-    {% endfor %}
-</div>
+<style>
+    .filter-input {
+        width: 100%;
+        border-radius: 1rem;
+        border: 1px solid #e5e7eb;
+        background: #f9fafb;
+        padding: 0.85rem 1rem;
+        font-size: 0.875rem;
+        outline: none;
+        transition: all 0.2s ease;
+    }
+
+    .filter-input:focus {
+        background: #ffffff;
+        border-color: #16a34a;
+        box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.12);
+    }
+</style>
+
 {% endblock %}

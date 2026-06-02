@@ -21,20 +21,19 @@ class FarmerPhoneForm(forms.Form):
 
 
 class OTPVerificationForm(forms.Form):
-    phone = forms.CharField(max_length=20, widget=forms.HiddenInput())
-    code = forms.CharField(max_length=6, label="OTP Code")
+    code = forms.CharField(max_length=20, label="OTP Code")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         apply_tailwind_classes(self)
 
-    def clean_phone(self):
-        return normalize_ugandan_phone(self.cleaned_data["phone"])
-
     def clean_code(self):
-        code = self.cleaned_data["code"].strip()
-        if not code.isdigit() or len(code) != 6:
+        raw_code = self.cleaned_data.get("code", "")
+        code = "".join(ch for ch in raw_code.strip() if ch.isdigit())
+
+        if len(code) != 6:
             raise forms.ValidationError("Enter a valid 6-digit OTP code.")
+
         return code
 
 
@@ -52,8 +51,12 @@ class FarmerSignupForm(forms.ModelForm):
 
     def clean(self):
         cleaned = super().clean()
-        if cleaned.get("password") != cleaned.get("confirm_password"):
+        password = cleaned.get("password")
+        confirm_password = cleaned.get("confirm_password")
+
+        if password and confirm_password and password != confirm_password:
             self.add_error("confirm_password", "Passwords do not match.")
+
         return cleaned
 
 
@@ -110,8 +113,10 @@ class BusinessSignupForm(forms.ModelForm):
 
     def clean(self):
         cleaned = super().clean()
+        password = cleaned.get("password")
+        confirm_password = cleaned.get("confirm_password")
 
-        if cleaned.get("password") != cleaned.get("confirm_password"):
+        if password and confirm_password and password != confirm_password:
             self.add_error("confirm_password", "Passwords do not match.")
 
         return cleaned

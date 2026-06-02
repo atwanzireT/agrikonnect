@@ -4,13 +4,14 @@ from django.db.models import Avg, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_http_methods
 
-from .forms import ProduceListingForm, BuyerRequestForm
+from .forms import ProduceListingForm, BuyerRequestForm, ListingInquiryForm, ProduceListingImageForm, MarketplacePurchaseForm
 from .models import (
     ProduceListing,
     ProduceListingImage,
     ListingInquiry,
     BuyerRequest,
     BuyerRequestImage,
+    MarketplacePurchase,
 )
 
 
@@ -82,12 +83,22 @@ def listing_list(request):
 @login_required
 def listing_detail(request, pk):
     listing = get_object_or_404(ProduceListing, pk=pk)
-    return render(request, "marketplace/listing_detail.html", {"listing": listing})
+    context = {
+        "listing": listing,
+        "inquiry_form": ListingInquiryForm(),
+        "image_form": ProduceListingImageForm(),
+        "purchase_form": MarketplacePurchaseForm(initial={"quantity": 1}),
+    }
+    return render(request, "marketplace/listing_detail.html", context)
 
 
 @login_required
 @require_http_methods(["GET", "POST"])
 def listing_create(request):
+    if getattr(request.user, "account_type", None) == "guest":
+        messages.error(request, "Guest accounts can buy products but cannot create listings.")
+        return redirect("marketplace:listing_list")
+
     if request.method == "POST":
         form = ProduceListingForm(request.POST, farmer=request.user)
 
@@ -149,6 +160,28 @@ def inquiry_create(request, pk):
 
     messages.success(request, "Inquiry submitted successfully.")
     return redirect("marketplace:listing_detail", pk=listing.pk)
+
+
+@login_required
+@require_http_methods(["POST"])
+def purchase_create(request, pk):
+    listing = get_object_or_404(ProduceListing, pk=pk, status="open")
+    form = MarketplacePurchaseForm(request.POST)
+    if form.is_valid():
+        purchase = form.save(commit=False)
+        purchase.listing = listing
+        purchase.buyer = request.user
+        purchase.unit_price = listing.expected_price
+        purchase.save()
+        messages.success(request, "Purchase request submitted successfully. The seller will contact you.")
+        return redirect("marketplace:listing_detail", pk=listing.pk)
+    messages.error(request, "Please correct the purchase details and try again.")
+    return render(request, "marketplace/listing_detail.html", {
+        "listing": listing,
+        "inquiry_form": ListingInquiryForm(),
+        "image_form": ProduceListingImageForm(),
+        "purchase_form": form,
+    })
 
 
 @login_required

@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% block title %}Upload Buyer Request Images | AgroSync{% endblock %}
+
+{% block content %}
+
+<div class="max-w-4xl mx-auto">
+
+    <!-- Header -->
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold text-gray-900">
+            Upload Images
+        </h1>
+
+        <p class="text-gray-500 mt-2">
+            Add clear images or reference photos for this buyer request.
+        </p>
+    </div>
+
+    <!-- Main Card -->
+    <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 sm:p-8">
+
+        <div class="mb-6 rounded-2xl bg-green-50 border border-green-100 p-4">
+            <div class="flex items-start gap-3">
+                <div class="w-10 h-10 rounded-xl bg-green-100 text-green-700 flex items-center justify-center">
+                    <i class="fas fa-image"></i>
+                </div>
+
+                <div>
+                    <p class="text-sm font-bold text-green-800">
+                        Buyer Request
+                    </p>
+
+                    <p class="text-sm text-green-700 mt-1">
+                        Upload photos that help farmers understand the product quality, packaging, or sample needed.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <form method="post"
+              enctype="multipart/form-data"
+              class="space-y-6">
+
+            {% csrf_token %}
+
+            {% include "partials/form_errors.html" %}
+
+            <!-- Upload Fields -->
+            <div>
+                <h2 class="text-lg font-bold text-gray-900 mb-4">
+                    Image Details
+                </h2>
+
+                <div class="grid grid-cols-1 gap-5">
+                    {% include "partials/form_fields.html" %}
+                </div>
+            </div>
+
+            <!-- Help Box -->
+            <div class="rounded-2xl bg-gray-50 border border-gray-100 p-4">
+                <div class="flex items-start gap-3">
+                    <i class="fas fa-circle-info text-green-600 mt-0.5"></i>
+
+                    <div>
+                        <p class="text-sm font-bold text-gray-800">
+                            Image tips
+                        </p>
+
+                        <ul class="mt-2 text-sm text-gray-500 space-y-1">
+                            <li>Use clear photos.</li>
+                            <li>Avoid very dark or blurry images.</li>
+                            <li>Upload product samples, packaging, or quality references.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                <a href="{% url 'marketplace:buyer_request_list' %}"
+                   class="rounded-2xl border border-gray-200 bg-white px-5 py-3 text-center text-gray-700 font-semibold hover:bg-gray-50">
+                    Back to Requests
+                </a>
+
+                <button type="submit"
+                        class="flex-1 rounded-2xl bg-green-700 px-5 py-3 text-white font-bold hover:bg-green-800">
+                    Upload Image
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+<style>
+    input,
+    select,
+    textarea {
+        width: 100%;
+        padding: 13px 15px;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        outline: none;
+        background: #f9fafb;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+        background: white;
+        border-color: #16a34a;
+        box-shadow: 0 0 0 4px rgba(22, 163, 74, 0.12);
+    }
+
+    input[type="file"] {
+        background: white;
+    }
+
+    label {
+        font-weight: 600;
+        color: #374151;
+        font-size: 14px;
+    }
+
+    .errorlist {
+        list-style: none;
+        padding-left: 0;
+        color: #dc2626;
+        font-size: 13px;
+        margin-top: 6px;
+    }
+</style>
+
+{% endblock %}
