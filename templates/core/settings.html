@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+{% block title %}Settings | AgroSync{% endblock %}
+
+{% block content %}
+<section class="space-y-8">
+    <div class="relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-slate-950 via-green-900 to-emerald-700 p-6 sm:p-8 lg:p-10 text-white shadow-2xl shadow-slate-900/20">
+        <div class="absolute -right-24 -top-24 h-80 w-80 rounded-full bg-white/10 blur-3xl"></div>
+        <div class="relative flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div>
+                <span class="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-xs font-bold text-green-50 ring-1 ring-white/20">
+                    <i class="fas fa-cog"></i>
+                    Account Settings
+                </span>
+                <h1 class="mt-5 text-3xl sm:text-4xl lg:text-5xl font-black leading-tight">
+                    Manage your AgroSync account
+                </h1>
+                <p class="mt-4 max-w-2xl text-green-50/95 leading-7">
+                    Update your profile, manage verification, review account status, and access support from one place.
+                </p>
+            </div>
+
+            <div class="rounded-3xl bg-white/10 p-4 ring-1 ring-white/20 backdrop-blur">
+                <p class="text-sm text-green-50">Signed in as</p>
+                <p class="mt-1 font-black">{{ request.user.full_name }}</p>
+                <p class="text-sm text-green-50/80 capitalize">{{ request.user.account_type }} account</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <div class="xl:col-span-2 space-y-6">
+            <div class="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
+                <div class="flex items-start justify-between gap-4">
+                    <div>
+                        <h2 class="text-xl font-black text-gray-900">Profile & verification</h2>
+                        <p class="mt-1 text-sm text-gray-500">Keep your public marketplace information accurate and trustworthy.</p>
+                    </div>
+                    <div class="h-12 w-12 rounded-2xl bg-green-50 text-green-700 flex items-center justify-center shrink-0">
+                        <i class="fas fa-id-card"></i>
+                    </div>
+                </div>
+
+                <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {% if profile_route %}
+                        <a href="{% url profile_route %}" class="settings-card">
+                            <i class="fas fa-user-pen"></i>
+                            <div>
+                                <h3>Update profile</h3>
+                                <p>Edit your name, location, business details, or farmer information.</p>
+                            </div>
+                        </a>
+                    {% endif %}
+
+                    {% if request.user.account_type == "business" %}
+                        <a href="{% url 'profiles:business_document_upload' %}" class="settings-card">
+                            <i class="fas fa-file-shield"></i>
+                            <div>
+                                <h3>Verification documents</h3>
+                                <p>Upload business certificates, trading licenses, or registration files.</p>
+                            </div>
+                        </a>
+                    {% endif %}
+
+                    <a href="{% url 'core:help_center' %}" class="settings-card">
+                        <i class="fas fa-circle-question"></i>
+                        <div>
+                            <h3>Help Center</h3>
+                            <p>Get answers about login, OTP, profiles, marketplace, and verification.</p>
+                        </div>
+                    </a>
+
+                    <a href="{% url 'accounts:dashboard_redirect' %}" class="settings-card">
+                        <i class="fas fa-gauge-high"></i>
+                        <div>
+                            <h3>Dashboard</h3>
+                            <p>Return to your main AgroSync workspace.</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <div class="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
+                <h2 class="text-xl font-black text-gray-900">Preferences</h2>
+                <p class="mt-1 text-sm text-gray-500">These interface preferences are ready for future backend storage.</p>
+
+                <form method="post" class="mt-6 space-y-4">
+                    {% csrf_token %}
+                    <label class="preference-row">
+                        <div>
+                            <span>Email notifications</span>
+                            <p>Receive marketplace, account, and verification updates.</p>
+                        </div>
+                        <input type="checkbox" name="email_notifications" checked class="h-5 w-5 rounded border-gray-300 text-green-700 focus:ring-green-500">
+                    </label>
+
+                    <label class="preference-row">
+                        <div>
+                            <span>Marketplace alerts</span>
+                            <p>Get alerts when relevant farmer offers or buyer requests appear.</p>
+                        </div>
+                        <input type="checkbox" name="marketplace_alerts" checked class="h-5 w-5 rounded border-gray-300 text-green-700 focus:ring-green-500">
+                    </label>
+
+                    <label class="preference-row">
+                        <div>
+                            <span>Compact dashboard</span>
+                            <p>Use a denser dashboard layout on supported pages.</p>
+                        </div>
+                        <input type="checkbox" name="compact_dashboard" class="h-5 w-5 rounded border-gray-300 text-green-700 focus:ring-green-500">
+                    </label>
+
+                    <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-green-700 px-5 py-3 text-sm font-bold text-white hover:bg-green-800 transition">
+                        <i class="fas fa-save"></i>
+                        Save preferences
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <aside class="space-y-6">
+            <div class="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
+                <h2 class="text-lg font-black text-gray-900">Account status</h2>
+                <div class="mt-5 space-y-3">
+                    <div class="status-row">
+                        <span>Account type</span>
+                        <strong class="capitalize">{{ request.user.account_type }}</strong>
+                    </div>
+                    <div class="status-row">
+                        <span>Phone verified</span>
+                        <strong>{% if request.user.is_phone_verified %}Yes{% else %}No{% endif %}</strong>
+                    </div>
+                    <div class="status-row">
+                        <span>Email verified</span>
+                        <strong>{% if request.user.is_email_verified %}Yes{% else %}No{% endif %}</strong>
+                    </div>
+                    <div class="status-row">
+                        <span>Profile verified</span>
+                        <strong>{% if request.user.is_verified %}Yes{% else %}Pending{% endif %}</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="rounded-3xl border border-red-100 bg-red-50 p-6">
+                <h2 class="text-lg font-black text-red-900">Session</h2>
+                <p class="mt-2 text-sm leading-6 text-red-700">Sign out of AgroSync on this device.</p>
+                <form method="post" action="{% url 'accounts:logout' %}" class="mt-5">
+                    {% csrf_token %}
+                    <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-red-600 px-5 py-3 text-sm font-bold text-white hover:bg-red-700 transition">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </button>
+                </form>
+            </div>
+        </aside>
+    </div>
+</section>
+
+<style>
+    .settings-card {
+        display: flex;
+        gap: 1rem;
+        border-radius: 1.5rem;
+        border: 1px solid #f3f4f6;
+        background: linear-gradient(180deg, #ffffff, #fafafa);
+        padding: 1rem;
+        transition: all 0.2s ease;
+    }
+    .settings-card:hover {
+        border-color: #bbf7d0;
+        background: #f0fdf4;
+        transform: translateY(-2px);
+    }
+    .settings-card i {
+        display: flex;
+        height: 2.75rem;
+        width: 2.75rem;
+        align-items: center;
+        justify-content: center;
+        border-radius: 1rem;
+        background: #ecfdf5;
+        color: #15803d;
+        flex-shrink: 0;
+    }
+    .settings-card h3 { font-weight: 900; color: #111827; }
+    .settings-card p { margin-top: 0.25rem; font-size: 0.875rem; line-height: 1.5; color: #6b7280; }
+    .preference-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        border-radius: 1.25rem;
+        border: 1px solid #f3f4f6;
+        padding: 1rem;
+    }
+    .preference-row span { font-weight: 900; color: #111827; }
+    .preference-row p { margin-top: 0.25rem; font-size: 0.875rem; color: #6b7280; }
+    .status-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        border-radius: 1rem;
+        background: #f9fafb;
+        padding: 0.8rem 1rem;
+        font-size: 0.875rem;
+    }
+    .status-row span { color: #6b7280; font-weight: 700; }
+    .status-row strong { color: #111827; font-weight: 900; }
+</style>
+{% endblock %}

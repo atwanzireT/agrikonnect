@@ -165,6 +165,13 @@
                         <span>Market Prices</span>
                     </a>
                 {% endif %}
+
+                {% if not request.user.is_authenticated %}
+                    <a href="{% url 'core:help_center' %}" class="nav-link">
+                        <i class="fas fa-circle-question"></i>
+                        <span>Help</span>
+                    </a>
+                {% endif %}
             </div>
 
             <!-- Desktop Actions -->
@@ -221,11 +228,11 @@
                                     <i class="fas fa-user-circle"></i>
                                     <span>My Profile</span>
                                 </a>
-                                <a href="#" class="dropdown-link rounded-2xl">
+                                <a href="{% url 'core:settings' %}" class="dropdown-link rounded-2xl">
                                     <i class="fas fa-cog"></i>
                                     <span>Settings</span>
                                 </a>
-                                <a href="#" class="dropdown-link rounded-2xl">
+                                <a href="{% url 'core:help_center' %}" class="dropdown-link rounded-2xl">
                                     <i class="fas fa-circle-question"></i>
                                     <span>Help Center</span>
                                 </a>
@@ -440,12 +447,12 @@
 
                         <div class="my-4 border-t border-gray-100"></div>
 
-                        <a href="#" class="mobile-link">
+                        <a href="{% url 'core:settings' %}" class="mobile-link">
                             <i class="fas fa-cog"></i>
                             <span>Settings</span>
                         </a>
 
-                        <a href="#" class="mobile-link">
+                        <a href="{% url 'core:help_center' %}" class="mobile-link">
                             <i class="fas fa-circle-question"></i>
                             <span>Help & Support</span>
                         </a>
@@ -460,6 +467,11 @@
                         <a href="{% url 'prices:market_price_list' %}" class="mobile-link">
                             <i class="fas fa-chart-line"></i>
                             <span>Market Prices</span>
+                        </a>
+
+                        <a href="{% url 'core:help_center' %}" class="mobile-link">
+                            <i class="fas fa-circle-question"></i>
+                            <span>Help & Support</span>
                         </a>
 
                         <div class="my-4 border-t border-gray-100"></div>

@@ -2,18 +2,120 @@
 {% block title %}Upload Business Documents{% endblock %}
 
 {% block content %}
-<div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-    <h1 class="text-2xl font-bold mb-6">Upload Verification Document</h1>
+<section class="max-w-5xl mx-auto px-4 py-8">
+    <div class="mb-8">
+        <a href="{% url 'profiles:business_profile_update' %}"
+           class="inline-flex items-center gap-2 text-sm font-semibold text-gray-500 hover:text-green-700 transition">
+            <i class="fas fa-arrow-left"></i>
+            Back to Business Profile
+        </a>
+    </div>
 
-    <form method="post" enctype="multipart/form-data" class="ajax-form space-y-4">
-        {% csrf_token %}
-        <div class="ajax-errors"></div>
-        <div class="ajax-success"></div>
-        {% include "partials/form_fields.html" %}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Info Card -->
+        <div class="lg:col-span-1">
+            <div class="rounded-3xl bg-gradient-to-br from-green-700 to-emerald-600 p-6 text-white shadow-xl shadow-green-700/20">
+                <div class="w-14 h-14 rounded-2xl bg-white/15 flex items-center justify-center mb-5">
+                    <i class="fas fa-file-shield text-2xl"></i>
+                </div>
 
-        <button type="submit" class="rounded-lg bg-green-700 px-5 py-3 text-white font-semibold hover:bg-green-800">
-            Upload Document
-        </button>
-    </form>
-</div>
+                <h2 class="text-2xl font-extrabold leading-tight">
+                    Verify your business
+                </h2>
+
+                <p class="mt-3 text-sm text-green-50 leading-relaxed">
+                    Upload official documents so farmers and buyers can trust your business on AgroSync.
+                </p>
+
+                <div class="mt-6 space-y-3 text-sm">
+                    <div class="flex items-center gap-3">
+                        <i class="fas fa-check-circle text-green-100"></i>
+                        Business certificate
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <i class="fas fa-check-circle text-green-100"></i>
+                        Trading license
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <i class="fas fa-check-circle text-green-100"></i>
+                        Tax or registration document
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-5 rounded-3xl border border-amber-100 bg-amber-50 p-5">
+                <div class="flex gap-3">
+                    <div class="w-10 h-10 rounded-2xl bg-amber-100 flex items-center justify-center shrink-0">
+                        <i class="fas fa-lightbulb text-amber-600"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-amber-900">Upload tip</h3>
+                        <p class="mt-1 text-sm text-amber-800 leading-relaxed">
+                            Make sure the document is clear, readable, and shows your business name.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Upload Form -->
+        <div class="lg:col-span-2">
+            <div class="rounded-3xl border border-gray-100 bg-white shadow-xl shadow-gray-200/60 overflow-hidden">
+                <div class="border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white px-6 py-5">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-2xl bg-green-50 flex items-center justify-center">
+                            <i class="fas fa-cloud-arrow-up text-green-700 text-xl"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-2xl font-extrabold text-gray-900">
+                                Upload Verification Document
+                            </h1>
+                            <p class="mt-1 text-sm text-gray-500">
+                                Submit one document at a time for review.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <form method="post"
+                      enctype="multipart/form-data"
+                      class="ajax-form p-6 space-y-6">
+                    {% csrf_token %}
+
+                    <div class="ajax-errors"></div>
+                    <div class="ajax-success"></div>
+
+                    <div class="rounded-3xl border-2 border-dashed border-green-200 bg-green-50/40 p-6">
+                        <div class="text-center mb-5">
+                            <div class="mx-auto mb-3 w-14 h-14 rounded-2xl bg-white flex items-center justify-center shadow-sm">
+                                <i class="fas fa-file-upload text-green-700 text-2xl"></i>
+                            </div>
+                            <h3 class="font-bold text-gray-800">
+                                Select your verification file
+                            </h3>
+                            <p class="mt-1 text-sm text-gray-500">
+                                Accepted formats depend on your form settings.
+                            </p>
+                        </div>
+
+                        {% include "partials/form_fields.html" %}
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-2">
+                        <p class="text-xs text-gray-500">
+                            <i class="fas fa-lock mr-1 text-green-600"></i>
+                            Your document is stored securely and used only for verification.
+                        </p>
+
+                        <button type="submit"
+                                class="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-green-700 to-emerald-500 px-6 py-3 text-white font-bold shadow-lg shadow-green-700/20 hover:shadow-xl hover:-translate-y-0.5 transition">
+                            <i class="fas fa-cloud-arrow-up"></i>
+                            Upload Document
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
 {% endblock %}
