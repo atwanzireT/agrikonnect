@@ -5,7 +5,9 @@ from datetime import timedelta
 
 from django.contrib import messages
 from django.contrib.auth import login, logout
+from django.http import JsonResponse
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 
@@ -28,6 +30,38 @@ OTP_EXPIRY_MINUTES = 5
 MAX_OTP_ATTEMPTS = 5
 
 
+def is_ajax(request):
+    return request.headers.get("x-requested-with") == "XMLHttpRequest"
+
+
+def form_errors(form):
+    return {
+        field: [str(error) for error in errors]
+        for field, errors in form.errors.items()
+    }
+
+
+def json_success(redirect_url=None, message=None, extra=None):
+    data = {"success": True}
+    if redirect_url:
+        data["redirect_url"] = redirect_url
+    if message:
+        data["message"] = message
+    if extra:
+        data.update(extra)
+    return JsonResponse(data)
+
+
+def json_error(message, errors=None, status=400):
+    data = {
+        "success": False,
+        "message": message,
+    }
+    if errors:
+        data["errors"] = errors
+    return JsonResponse(data, status=status)
+
+
 def safe_login(request, user):
     login(request, user, backend=AUTH_BACKEND)
 
@@ -44,10 +78,11 @@ def dashboard_redirect(request):
     if not request.user.is_authenticated:
         return redirect("core:home")
 
-    if request.user.account_type in [AccountTypeChoices.FARMER, AccountTypeChoices.GUEST]:
-        return redirect("marketplace:listing_list")
-
-    if request.user.account_type == AccountTypeChoices.BUSINESS:
+    if request.user.account_type in [
+        AccountTypeChoices.FARMER,
+        AccountTypeChoices.GUEST,
+        AccountTypeChoices.BUSINESS,
+    ]:
         return redirect("marketplace:listing_list")
 
     return redirect("/admin/")
@@ -57,12 +92,23 @@ def dashboard_redirect(request):
 def farmer_request_otp(request):
     form = FarmerPhoneForm(request.POST or None)
 
-    if request.method == "POST" and form.is_valid():
+    if request.method == "POST":
+        if not form.is_valid():
+            if is_ajax(request):
+                return json_error(
+                    "Please enter a valid phone number.",
+                    errors=form_errors(form),
+                )
+            return render(request, "accounts/farmer_request_otp.html", {"form": form})
+
         try:
             phone = normalize_ugandan_phone(form.cleaned_data["phone"])
 
             if User.objects.filter(phone=phone).exists():
-                messages.error(request, "An account with this phone number already exists.")
+                message = "An account with this phone number already exists."
+                if is_ajax(request):
+                    return json_error(message)
+                messages.error(request, message)
                 return render(request, "accounts/farmer_request_otp.html", {"form": form})
 
             PhoneOTP.objects.filter(
@@ -86,7 +132,10 @@ def farmer_request_otp(request):
 
             if not sms_sent:
                 otp.delete()
-                messages.error(request, f"Failed to send OTP SMS. {sms_response}")
+                message = f"Failed to send OTP SMS. {sms_response}"
+                if is_ajax(request):
+                    return json_error(message, status=502)
+                messages.error(request, message)
                 return render(request, "accounts/farmer_request_otp.html", {"form": form})
 
             request.session["verified_signup_phone"] = phone
@@ -94,12 +143,21 @@ def farmer_request_otp(request):
             request.session.pop("verified_phone", None)
             request.session.modified = True
 
-            messages.success(request, "OTP sent successfully. Please enter the code sent to your phone.")
+            redirect_url = reverse("accounts:farmer_verify_otp")
+            message = "OTP sent successfully. Please enter the code sent to your phone."
+
+            if is_ajax(request):
+                return json_success(redirect_url=redirect_url, message=message)
+
+            messages.success(request, message)
             return redirect("accounts:farmer_verify_otp")
 
         except Exception as exc:
             logger.exception("Farmer OTP request failed")
-            messages.error(request, f"Server error: {str(exc)}")
+            message = f"Server error: {str(exc)}"
+            if is_ajax(request):
+                return json_error(message, status=500)
+            messages.error(request, message)
 
     return render(request, "accounts/farmer_request_otp.html", {"form": form})
 
@@ -109,13 +167,27 @@ def farmer_verify_otp(request):
     session_phone = request.session.get("verified_signup_phone")
 
     if not session_phone:
-        messages.error(request, "Please enter your phone number first.")
+        message = "Please enter your phone number first."
+        if is_ajax(request):
+            return json_error(
+                message,
+                extra={"redirect_url": reverse("accounts:farmer_request_otp")},
+            )
+        messages.error(request, message)
         return redirect("accounts:farmer_request_otp")
 
     phone = normalize_ugandan_phone(session_phone)
     form = OTPVerificationForm(request.POST or None)
 
-    if request.method == "POST" and form.is_valid():
+    if request.method == "POST":
+        if not form.is_valid():
+            if is_ajax(request):
+                return json_error(
+                    "Enter a valid 6-digit OTP code.",
+                    errors=form_errors(form),
+                )
+            return render(request, "accounts/farmer_verify_otp.html", {"form": form, "phone": phone})
+
         code = form.cleaned_data["code"]
 
         otp = (
@@ -129,17 +201,35 @@ def farmer_verify_otp(request):
         )
 
         if not otp:
-            messages.error(request, "No active OTP found. Please request a new OTP.")
+            message = "No active OTP found. Please request a new OTP."
+            if is_ajax(request):
+                return json_error(message)
+            messages.error(request, message)
+
         elif otp.is_expired():
             otp.consumed_at = timezone.now()
             otp.save(update_fields=["consumed_at"])
-            messages.error(request, "OTP has expired. Please request a new OTP.")
+
+            message = "OTP has expired. Please request a new OTP."
+            if is_ajax(request):
+                return json_error(message)
+            messages.error(request, message)
+
         elif otp.attempts >= MAX_OTP_ATTEMPTS:
-            messages.error(request, "Too many failed attempts. Please request a new OTP.")
+            message = "Too many failed attempts. Please request a new OTP."
+            if is_ajax(request):
+                return json_error(message)
+            messages.error(request, message)
+
         elif otp.code_hash != hash_code(code):
             otp.attempts += 1
             otp.save(update_fields=["attempts"])
-            messages.error(request, "Invalid OTP code.")
+
+            message = "Invalid OTP code."
+            if is_ajax(request):
+                return json_error(message)
+            messages.error(request, message)
+
         else:
             otp.consumed_at = timezone.now()
             otp.save(update_fields=["consumed_at"])
@@ -148,7 +238,13 @@ def farmer_verify_otp(request):
             request.session["verified_phone"] = phone
             request.session.modified = True
 
-            messages.success(request, "Phone verified successfully. Complete your farmer account.")
+            redirect_url = reverse("accounts:farmer_signup")
+            message = "Phone verified successfully. Complete your farmer account."
+
+            if is_ajax(request):
+                return json_success(redirect_url=redirect_url, message=message)
+
+            messages.success(request, message)
             return redirect("accounts:farmer_signup")
 
     return render(request, "accounts/farmer_verify_otp.html", {"form": form, "phone": phone})
@@ -159,14 +255,23 @@ def farmer_resend_otp(request):
     session_phone = request.session.get("verified_signup_phone")
 
     if not session_phone:
-        messages.error(request, "Please enter your phone number again.")
-        return redirect("accounts:farmer_request_otp")
+        message = "Please enter your phone number again."
+        redirect_url = reverse("accounts:farmer_request_otp")
+
+        if is_ajax(request):
+            return json_error(message, status=400)
+
+        messages.error(request, message)
+        return redirect(redirect_url)
 
     try:
         phone = normalize_ugandan_phone(session_phone)
 
         if User.objects.filter(phone=phone).exists():
-            messages.error(request, "An account with this phone number already exists.")
+            message = "An account with this phone number already exists."
+            if is_ajax(request):
+                return json_error(message)
+            messages.error(request, message)
             return redirect("accounts:farmer_request_otp")
 
         PhoneOTP.objects.filter(
@@ -190,13 +295,25 @@ def farmer_resend_otp(request):
 
         if not sms_sent:
             otp.delete()
-            messages.error(request, f"Failed to resend OTP SMS. {sms_response}")
+            message = f"Failed to resend OTP SMS. {sms_response}"
+            if is_ajax(request):
+                return json_error(message, status=502)
+            messages.error(request, message)
         else:
-            messages.success(request, "A new OTP has been sent. Use the latest code only.")
+            message = "A new OTP has been sent. Use the latest code only."
+            if is_ajax(request):
+                return json_success(
+                    redirect_url=reverse("accounts:farmer_verify_otp"),
+                    message=message,
+                )
+            messages.success(request, message)
 
     except Exception as exc:
         logger.exception("Farmer OTP resend failed")
-        messages.error(request, f"Server error: {str(exc)}")
+        message = f"Server error: {str(exc)}"
+        if is_ajax(request):
+            return json_error(message, status=500)
+        messages.error(request, message)
 
     return redirect("accounts:farmer_verify_otp")
 
@@ -204,21 +321,52 @@ def farmer_resend_otp(request):
 @require_http_methods(["GET", "POST"])
 def farmer_signup(request):
     if not request.session.get("phone_otp_verified"):
-        messages.error(request, "Please verify your phone first.")
+        message = "Please verify your phone first."
+        if is_ajax(request):
+            return json_error(
+                message,
+                extra={"redirect_url": reverse("accounts:farmer_request_otp")},
+            )
+        messages.error(request, message)
         return redirect("accounts:farmer_request_otp")
 
     verified_phone = normalize_ugandan_phone(request.session.get("verified_phone"))
 
     if not verified_phone:
-        messages.error(request, "Your verification session expired. Please verify your phone again.")
+        message = "Your verification session expired. Please verify your phone again."
+        if is_ajax(request):
+            return json_error(
+                message,
+                extra={"redirect_url": reverse("accounts:farmer_request_otp")},
+            )
+        messages.error(request, message)
         return redirect("accounts:farmer_request_otp")
 
     form = FarmerSignupForm(request.POST or None)
 
-    if request.method == "POST" and form.is_valid():
+    if request.method == "POST":
+        if not form.is_valid():
+            if is_ajax(request):
+                return json_error(
+                    "Please correct the highlighted errors.",
+                    errors=form_errors(form),
+                )
+            return render(
+                request,
+                "accounts/farmer_signup.html",
+                {"form": form, "verified_phone": verified_phone},
+            )
+
         if User.objects.filter(phone=verified_phone).exists():
-            messages.error(request, "An account with this phone number already exists.")
-            return render(request, "accounts/farmer_signup.html", {"form": form, "verified_phone": verified_phone})
+            message = "An account with this phone number already exists."
+            if is_ajax(request):
+                return json_error(message)
+            messages.error(request, message)
+            return render(
+                request,
+                "accounts/farmer_signup.html",
+                {"form": form, "verified_phone": verified_phone},
+            )
 
         user = create_farmer_account(
             full_name=form.cleaned_data["full_name"],
@@ -234,20 +382,47 @@ def farmer_signup(request):
         request.session.modified = True
 
         safe_login(request, user)
-        messages.success(request, "Farmer account created successfully.")
+
+        redirect_url = reverse("marketplace:listing_list")
+        message = "Farmer account created successfully."
+
+        if is_ajax(request):
+            return json_success(redirect_url=redirect_url, message=message)
+
+        messages.success(request, message)
         return redirect("marketplace:listing_list")
 
-    return render(request, "accounts/farmer_signup.html", {"form": form, "verified_phone": verified_phone})
+    return render(
+        request,
+        "accounts/farmer_signup.html",
+        {"form": form, "verified_phone": verified_phone},
+    )
 
 
 @require_http_methods(["GET", "POST"])
 def farmer_login(request):
     form = FarmerLoginForm(request.POST or None, request=request)
 
-    if request.method == "POST" and form.is_valid():
-        user = form.cleaned_data["user"]
-        safe_login(request, user)
-        return redirect("marketplace:listing_list")
+    if request.method == "POST":
+        if form.is_valid():
+            user = form.cleaned_data["user"]
+            safe_login(request, user)
+
+            redirect_url = reverse("marketplace:listing_list")
+
+            if is_ajax(request):
+                return json_success(
+                    redirect_url=redirect_url,
+                    message="Login successful.",
+                )
+
+            return redirect("marketplace:listing_list")
+
+        if is_ajax(request):
+            return json_error(
+                "Invalid phone number or password.",
+                errors=form_errors(form),
+            )
 
     return render(request, "accounts/farmer_login.html", {"form": form})
 
@@ -256,7 +431,15 @@ def farmer_login(request):
 def business_signup(request):
     form = BusinessSignupForm(request.POST or None)
 
-    if request.method == "POST" and form.is_valid():
+    if request.method == "POST":
+        if not form.is_valid():
+            if is_ajax(request):
+                return json_error(
+                    "Please correct the highlighted errors.",
+                    errors=form_errors(form),
+                )
+            return render(request, "accounts/business_signup.html", {"form": form})
+
         user = create_business_account(
             full_name=form.cleaned_data["full_name"],
             email=form.cleaned_data["email"],
@@ -266,7 +449,14 @@ def business_signup(request):
         )
 
         safe_login(request, user)
-        messages.success(request, "Business account created successfully.")
+
+        redirect_url = reverse("marketplace:listing_list")
+        message = "Business account created successfully."
+
+        if is_ajax(request):
+            return json_success(redirect_url=redirect_url, message=message)
+
+        messages.success(request, message)
         return redirect("marketplace:listing_list")
 
     return render(request, "accounts/business_signup.html", {"form": form})
@@ -276,14 +466,37 @@ def business_signup(request):
 def business_login(request):
     form = BusinessLoginForm(request.POST or None, request=request)
 
-    if request.method == "POST" and form.is_valid():
-        user = form.cleaned_data["user"]
-        safe_login(request, user)
-        return redirect("marketplace:listing_list")
+    if request.method == "POST":
+        if form.is_valid():
+            user = form.cleaned_data["user"]
+            safe_login(request, user)
+
+            redirect_url = reverse("marketplace:listing_list")
+
+            if is_ajax(request):
+                return json_success(
+                    redirect_url=redirect_url,
+                    message="Login successful.",
+                )
+
+            return redirect("marketplace:listing_list")
+
+        if is_ajax(request):
+            return json_error(
+                "Invalid email or password.",
+                errors=form_errors(form),
+            )
 
     return render(request, "accounts/business_login.html", {"form": form})
 
 
 def logout_view(request):
     logout(request)
+
+    if is_ajax(request):
+        return json_success(
+            redirect_url=reverse("core:home"),
+            message="Logged out successfully.",
+        )
+
     return redirect("core:home")

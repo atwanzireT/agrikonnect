@@ -1,29 +1,32 @@
-<nav class="sticky top-0 z-50 border-b border-white/60 bg-white/85 backdrop-blur-xl shadow-sm">
+<nav class="sticky top-0 z-50 border-b border-emerald-100/70 bg-white/90 backdrop-blur-2xl shadow-[0_10px_35px_rgba(15,23,42,0.06)]">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex h-16 items-center justify-between">
+        <div class="flex h-[72px] items-center justify-between gap-4">
 
             <!-- Brand -->
-            <a href="{% url 'core:home' %}" class="flex items-center gap-3 group">
-                <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-green-700 via-green-600 to-emerald-500 flex items-center justify-center shadow-lg shadow-green-700/20 group-hover:scale-105 transition">
-                    <i class="fas fa-leaf text-white"></i>
+            <a href="{% url 'core:home' %}" class="flex min-w-0 items-center gap-3 group" aria-label="AgroSync home">
+                <div class="relative">
+                    <div class="absolute -inset-1 rounded-3xl bg-gradient-to-br from-green-300 to-emerald-400 opacity-30 blur-md transition group-hover:opacity-60"></div>
+                    <div class="relative w-11 h-11 rounded-2xl bg-gradient-to-br from-green-700 via-green-600 to-emerald-500 flex items-center justify-center shadow-lg shadow-green-700/20 transition duration-300 group-hover:-rotate-3 group-hover:scale-105">
+                        <i class="fas fa-seedling text-white text-lg"></i>
+                    </div>
                 </div>
 
-                <div>
-                    <span class="block text-xl font-extrabold bg-gradient-to-r from-green-800 to-emerald-500 bg-clip-text text-transparent">
+                <div class="min-w-0">
+                    <span class="block truncate text-xl font-black tracking-tight bg-gradient-to-r from-green-900 via-green-700 to-emerald-500 bg-clip-text text-transparent">
                         AgroSync
                     </span>
-                    <span class="hidden sm:block text-[11px] text-gray-400 -mt-1">
+                    <span class="hidden sm:block truncate text-[11px] font-semibold uppercase tracking-[0.18em] text-gray-400 -mt-0.5">
                         Smart Agriculture Marketplace
                     </span>
                 </div>
             </a>
 
             <!-- Desktop Menu -->
-            <div class="hidden lg:flex items-center gap-1">
+            <div class="hidden lg:flex flex-1 items-center justify-center gap-1">
 
                 <a href="{% url 'core:home' %}" class="nav-link">
                     <i class="fas fa-home"></i>
-                    Home
+                    <span>Home</span>
                 </a>
 
                 {% if request.user.is_authenticated %}
@@ -31,76 +34,84 @@
                     {% if request.user.account_type == "farmer" %}
                         <a href="{% url 'farms:farmer_dashboard' %}" class="nav-link">
                             <i class="fas fa-chart-line"></i>
-                            Dashboard
+                            <span>Dashboard</span>
                         </a>
 
                         <div class="relative group">
-                            <button class="nav-link">
+                            <button type="button" class="nav-link" aria-haspopup="true">
                                 <i class="fas fa-tractor"></i>
-                                Farming
-                                <i class="fas fa-chevron-down text-[10px] group-hover:rotate-180 transition"></i>
+                                <span>Farming</span>
+                                <i class="fas fa-chevron-down nav-chevron"></i>
                             </button>
 
                             <div class="dropdown-menu">
+                                <div class="dropdown-title">Farm operations</div>
                                 <a href="{% url 'farms:farm_list' %}" class="dropdown-link">
-                                    <i class="fas fa-seedling"></i> My Farms
+                                    <i class="fas fa-seedling"></i>
+                                    <span>My Farms</span>
                                 </a>
                                 <a href="{% url 'farms:harvest_list' %}" class="dropdown-link">
-                                    <i class="fas fa-basket-shopping"></i> Harvests
+                                    <i class="fas fa-basket-shopping"></i>
+                                    <span>Harvests</span>
                                 </a>
                                 <a href="{% url 'farms:expense_list' %}" class="dropdown-link">
-                                    <i class="fas fa-receipt"></i> Expenses
+                                    <i class="fas fa-receipt"></i>
+                                    <span>Expenses</span>
                                 </a>
                                 <a href="{% url 'farms:sale_list' %}" class="dropdown-link">
-                                    <i class="fas fa-hand-holding-dollar"></i> Sales
+                                    <i class="fas fa-hand-holding-dollar"></i>
+                                    <span>Sales</span>
                                 </a>
                             </div>
                         </div>
 
                         <a href="{% url 'marketplace:listing_list' %}" class="nav-link">
                             <i class="fas fa-store"></i>
-                            Marketplace
+                            <span>Marketplace</span>
                         </a>
 
                         <a href="{% url 'profiles:farmer_profile_update' %}" class="nav-link">
                             <i class="fas fa-user"></i>
-                            Profile
+                            <span>Profile</span>
                         </a>
 
                     {% elif request.user.account_type == "business" %}
                         <a href="{% url 'marketplace:business_dashboard' %}" class="nav-link">
                             <i class="fas fa-chart-pie"></i>
-                            Dashboard
+                            <span>Dashboard</span>
                         </a>
 
                         <a href="{% url 'marketplace:listing_list' %}" class="nav-link">
                             <i class="fas fa-boxes-stacked"></i>
-                            Listings
+                            <span>Listings</span>
                         </a>
 
                         <a href="{% url 'marketplace:buyer_request_list' %}" class="nav-link">
                             <i class="fas fa-clipboard-list"></i>
-                            Requests
+                            <span>Requests</span>
                         </a>
 
                         <a href="{% url 'prices:market_price_list' %}" class="nav-link">
                             <i class="fas fa-chart-line"></i>
-                            Prices
+                            <span>Prices</span>
                         </a>
 
                         <div class="relative group">
-                            <button class="nav-link">
+                            <button type="button" class="nav-link" aria-haspopup="true">
                                 <i class="fas fa-building"></i>
-                                Business
-                                <i class="fas fa-chevron-down text-[10px] group-hover:rotate-180 transition"></i>
+                                <span>Business</span>
+                                <i class="fas fa-chevron-down nav-chevron"></i>
                             </button>
 
                             <div class="dropdown-menu">
+                                <div class="dropdown-title">Business tools</div>
                                 <a href="{% url 'profiles:business_profile_update' %}" class="dropdown-link">
-                                    <i class="fas fa-id-card"></i> Profile
+                                    <i class="fas fa-id-card"></i>
+                                    <span>Profile</span>
                                 </a>
                                 <a href="{% url 'profiles:business_document_upload' %}" class="dropdown-link">
-                                    <i class="fas fa-file-upload"></i> Documents
+                                    <i class="fas fa-file-upload"></i>
+                                    <span>Documents</span>
                                 </a>
                             </div>
                         </div>
@@ -108,75 +119,75 @@
                     {% elif request.user.account_type == "guest" %}
                         <a href="{% url 'marketplace:listing_list' %}" class="nav-link">
                             <i class="fas fa-store"></i>
-                            Products
+                            <span>Products</span>
                         </a>
 
                         <a href="{% url 'prices:market_price_list' %}" class="nav-link">
                             <i class="fas fa-chart-line"></i>
-                            Market Prices
+                            <span>Market Prices</span>
                         </a>
 
                     {% elif request.user.account_type == "admin" %}
                         <a href="{% url 'accounts:dashboard_redirect' %}" class="nav-link">
                             <i class="fas fa-gauge-high"></i>
-                            Dashboard
+                            <span>Dashboard</span>
                         </a>
 
                         <a href="{% url 'farms:farm_list' %}" class="nav-link">
                             <i class="fas fa-tractor"></i>
-                            Farms
+                            <span>Farms</span>
                         </a>
 
                         <a href="{% url 'marketplace:listing_list' %}" class="nav-link">
                             <i class="fas fa-store"></i>
-                            Marketplace
+                            <span>Marketplace</span>
                         </a>
 
                         <a href="{% url 'prices:market_price_list' %}" class="nav-link">
                             <i class="fas fa-chart-line"></i>
-                            Prices
+                            <span>Prices</span>
                         </a>
 
                         <a href="/admin/" class="nav-link">
                             <i class="fas fa-shield-alt"></i>
-                            Admin
+                            <span>Admin</span>
                         </a>
                     {% endif %}
 
                 {% else %}
                     <a href="{% url 'marketplace:listing_list' %}" class="nav-link">
                         <i class="fas fa-store"></i>
-                        Marketplace
+                        <span>Marketplace</span>
                     </a>
 
                     <a href="{% url 'prices:market_price_list' %}" class="nav-link">
                         <i class="fas fa-chart-line"></i>
-                        Market Prices
+                        <span>Market Prices</span>
                     </a>
                 {% endif %}
             </div>
 
             <!-- Desktop Actions -->
-            <div class="hidden lg:flex items-center gap-3">
+            <div class="hidden lg:flex items-center justify-end gap-3">
 
                 {% if request.user.is_authenticated %}
 
-                    <button class="relative w-10 h-10 rounded-2xl text-gray-500 hover:text-green-700 hover:bg-green-50 transition">
+                    <button type="button" class="relative w-11 h-11 rounded-2xl text-gray-500 hover:text-green-700 hover:bg-green-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-green-100 transition" aria-label="Notifications">
                         <i class="fas fa-bell"></i>
-                        <span class="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full ring-2 ring-white"></span>
+                        <span class="absolute top-2.5 right-2.5 w-2.5 h-2.5 bg-red-500 rounded-full ring-2 ring-white"></span>
                     </button>
 
                     <div class="relative group">
-                        <button class="flex items-center gap-3 rounded-2xl border border-gray-100 bg-white px-2 py-1.5 shadow-sm hover:shadow-md hover:border-green-100 transition">
-                            <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-green-700 to-emerald-500 flex items-center justify-center text-white">
+                        <button type="button" class="flex items-center gap-3 rounded-2xl border border-gray-100 bg-white/90 px-2 py-1.5 shadow-sm hover:shadow-lg hover:border-green-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-green-100 transition" aria-haspopup="true">
+                            <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-green-700 to-emerald-500 flex items-center justify-center text-white shadow-md">
                                 <i class="fas fa-user"></i>
                             </div>
 
                             <div class="hidden xl:block text-left">
-                                <p class="text-sm font-bold text-gray-800 leading-tight">
+                                <p class="text-sm font-extrabold text-gray-800 leading-tight">
                                     {{ request.user.full_name|truncatechars:18 }}
                                 </p>
-                                <p class="text-xs text-gray-400 capitalize">
+                                <p class="text-xs font-semibold text-gray-400 capitalize">
                                     {{ request.user.account_type }}
                                 </p>
                             </div>
@@ -184,35 +195,45 @@
                             <i class="fas fa-chevron-down text-xs text-gray-400 group-hover:rotate-180 transition"></i>
                         </button>
 
-                        <div class="absolute right-0 mt-3 w-64 rounded-3xl bg-white border border-gray-100 shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 overflow-hidden">
+                        <div class="absolute right-0 mt-3 w-72 rounded-[1.7rem] bg-white border border-gray-100 shadow-[0_25px_70px_rgba(15,23,42,0.16)] opacity-0 invisible translate-y-2 group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 transition-all duration-200 overflow-hidden z-60">
 
-                            <div class="p-4 bg-gradient-to-r from-green-50 to-emerald-50 border-b border-green-100">
-                                <p class="font-bold text-gray-800">
-                                    {{ request.user.full_name }}
-                                </p>
-                                <p class="text-xs text-gray-500 mt-1">
-                                    {{ request.user.email|default:"No email" }}
-                                </p>
-                                <span class="inline-flex mt-3 rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-700 capitalize">
+                            <div class="p-5 bg-gradient-to-br from-green-50 via-white to-emerald-50 border-b border-green-100">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-green-700 to-emerald-500 flex items-center justify-center text-white shadow-md">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <p class="truncate font-extrabold text-gray-800">
+                                            {{ request.user.full_name }}
+                                        </p>
+                                        <p class="truncate text-xs text-gray-500 mt-0.5">
+                                            {{ request.user.email|default:"No email" }}
+                                        </p>
+                                    </div>
+                                </div>
+                                <span class="inline-flex mt-4 rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-700 capitalize ring-1 ring-green-200">
                                     {{ request.user.account_type }}
                                 </span>
                             </div>
 
                             <div class="p-2">
                                 <a href="#" class="dropdown-link rounded-2xl">
-                                    <i class="fas fa-user-circle"></i> My Profile
+                                    <i class="fas fa-user-circle"></i>
+                                    <span>My Profile</span>
                                 </a>
                                 <a href="#" class="dropdown-link rounded-2xl">
-                                    <i class="fas fa-cog"></i> Settings
+                                    <i class="fas fa-cog"></i>
+                                    <span>Settings</span>
                                 </a>
                                 <a href="#" class="dropdown-link rounded-2xl">
-                                    <i class="fas fa-circle-question"></i> Help Center
+                                    <i class="fas fa-circle-question"></i>
+                                    <span>Help Center</span>
                                 </a>
                             </div>
 
                             <form method="post" action="{% url 'accounts:logout' %}" class="border-t border-gray-100 p-2">
                                 {% csrf_token %}
-                                <button type="submit" class="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold text-red-600 hover:bg-red-50 transition">
+                                <button type="submit" class="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50 transition">
                                     <i class="fas fa-sign-out-alt w-5"></i>
                                     Logout
                                 </button>
@@ -222,15 +243,15 @@
 
                 {% else %}
 
-                    <a href="{% url 'accounts:farmer_login' %}" class="text-sm font-semibold text-gray-600 hover:text-green-700 transition">
+                    <a href="{% url 'accounts:farmer_login' %}" class="nav-action-link">
                         Farmer Login
                     </a>
 
-                    <a href="{% url 'accounts:business_login' %}" class="text-sm font-semibold text-gray-600 hover:text-green-700 transition">
+                    <a href="{% url 'accounts:business_login' %}" class="nav-action-link">
                         Business Login
                     </a>
 
-                    <a href="{% url 'accounts:farmer_request_otp' %}" class="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-green-700 to-emerald-500 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-green-700/20 hover:shadow-xl hover:-translate-y-0.5 transition">
+                    <a href="{% url 'accounts:farmer_request_otp' %}" class="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-green-700 to-emerald-500 px-5 py-2.5 text-sm font-extrabold text-white shadow-lg shadow-green-700/20 hover:shadow-xl hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-green-100 transition">
                         <i class="fas fa-seedling text-xs"></i>
                         Get Started
                     </a>
@@ -241,15 +262,17 @@
             <!-- Mobile Button -->
             <button id="mobile-menu-button"
                     type="button"
-                    class="lg:hidden inline-flex items-center justify-center rounded-2xl p-2.5 text-gray-600 hover:bg-green-50 hover:text-green-700 transition">
+                    class="lg:hidden inline-flex items-center justify-center rounded-2xl p-2.5 text-gray-600 hover:bg-green-50 hover:text-green-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-green-100 transition"
+                    aria-label="Open menu"
+                    aria-expanded="false">
                 <i class="fas fa-bars text-xl"></i>
             </button>
         </div>
     </div>
 
     <!-- Mobile Drawer -->
-    <div id="mobile-menu" class="fixed inset-0 z-[999] hidden lg:hidden">
-        <div id="mobile-menu-backdrop" class="fixed inset-0 bg-black/50 backdrop-blur-sm"></div>
+    <div id="mobile-menu" class="fixed inset-0 z-[999] hidden lg:hidden" aria-hidden="true">
+        <div id="mobile-menu-backdrop" class="fixed inset-0 bg-slate-950/50 backdrop-blur-sm opacity-0 transition-opacity duration-300"></div>
 
         <div id="mobile-drawer" class="fixed right-0 top-0 h-full w-full max-w-sm translate-x-full bg-white shadow-2xl transition-transform duration-300 ease-out">
 
@@ -258,16 +281,16 @@
                 <!-- Drawer Header -->
                 <div class="flex items-center justify-between border-b border-gray-100 p-4">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-green-700 to-emerald-500 flex items-center justify-center shadow-lg">
-                            <i class="fas fa-leaf text-white"></i>
+                        <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-green-700 to-emerald-500 flex items-center justify-center shadow-lg">
+                            <i class="fas fa-seedling text-white"></i>
                         </div>
                         <div>
-                            <p class="text-lg font-extrabold text-green-700">AgroSync</p>
-                            <p class="text-[11px] text-gray-400 -mt-1">Agriculture Marketplace</p>
+                            <p class="text-lg font-black text-green-800">AgroSync</p>
+                            <p class="text-[11px] font-semibold uppercase tracking-widest text-gray-400 -mt-1">Agriculture Marketplace</p>
                         </div>
                     </div>
 
-                    <button id="mobile-menu-close" class="rounded-2xl p-2.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 transition">
+                    <button id="mobile-menu-close" type="button" class="rounded-2xl p-2.5 text-gray-400 hover:bg-gray-100 hover:text-gray-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-gray-100 transition" aria-label="Close menu">
                         <i class="fas fa-times text-lg"></i>
                     </button>
                 </div>
@@ -276,20 +299,20 @@
                 <div class="flex-1 overflow-y-auto p-4 space-y-1">
 
                     {% if request.user.is_authenticated %}
-                        <div class="mb-4 rounded-3xl bg-gradient-to-r from-green-50 to-emerald-50 border border-green-100 p-4">
+                        <div class="mb-4 rounded-3xl bg-gradient-to-br from-green-50 via-white to-emerald-50 border border-green-100 p-4 shadow-sm">
                             <div class="flex items-center gap-3">
                                 <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-green-700 to-emerald-500 flex items-center justify-center text-white shadow-md">
                                     <i class="fas fa-user"></i>
                                 </div>
 
-                                <div>
-                                    <p class="font-bold text-gray-800">
+                                <div class="min-w-0">
+                                    <p class="truncate font-extrabold text-gray-800">
                                         {{ request.user.full_name }}
                                     </p>
-                                    <p class="text-xs text-green-700 capitalize font-semibold">
+                                    <p class="text-xs text-green-700 capitalize font-bold">
                                         {{ request.user.account_type }}
                                     </p>
-                                    <p class="text-xs text-gray-500">
+                                    <p class="truncate text-xs text-gray-500">
                                         {{ request.user.email|default:"No email" }}
                                     </p>
                                 </div>
@@ -299,7 +322,7 @@
 
                     <a href="{% url 'core:home' %}" class="mobile-link">
                         <i class="fas fa-home"></i>
-                        Home
+                        <span>Home</span>
                     </a>
 
                     {% if request.user.is_authenticated %}
@@ -307,111 +330,111 @@
                         {% if request.user.account_type == "farmer" %}
                             <a href="{% url 'farms:farmer_dashboard' %}" class="mobile-link">
                                 <i class="fas fa-chart-line"></i>
-                                Dashboard
+                                <span>Dashboard</span>
                             </a>
 
-                            <div class="my-3 rounded-3xl bg-gray-50 p-3 space-y-1">
-                                <p class="px-3 py-1 text-xs font-bold uppercase tracking-wide text-gray-400">
+                            <div class="my-3 rounded-3xl bg-gray-50 p-3 space-y-1 ring-1 ring-gray-100">
+                                <p class="px-3 py-1 text-xs font-black uppercase tracking-[0.18em] text-gray-400">
                                     Farming
                                 </p>
 
                                 <a href="{% url 'farms:farm_list' %}" class="mobile-sub-link">
                                     <i class="fas fa-seedling"></i>
-                                    My Farms
+                                    <span>My Farms</span>
                                 </a>
 
                                 <a href="{% url 'farms:harvest_list' %}" class="mobile-sub-link">
                                     <i class="fas fa-basket-shopping"></i>
-                                    Harvests
+                                    <span>Harvests</span>
                                 </a>
 
                                 <a href="{% url 'farms:expense_list' %}" class="mobile-sub-link">
                                     <i class="fas fa-receipt"></i>
-                                    Expenses
+                                    <span>Expenses</span>
                                 </a>
 
                                 <a href="{% url 'farms:sale_list' %}" class="mobile-sub-link">
                                     <i class="fas fa-hand-holding-dollar"></i>
-                                    Sales
+                                    <span>Sales</span>
                                 </a>
                             </div>
 
                             <a href="{% url 'marketplace:listing_list' %}" class="mobile-link">
                                 <i class="fas fa-store"></i>
-                                Marketplace
+                                <span>Marketplace</span>
                             </a>
 
                             <a href="{% url 'profiles:farmer_profile_update' %}" class="mobile-link">
                                 <i class="fas fa-user"></i>
-                                Profile
+                                <span>Profile</span>
                             </a>
 
                         {% elif request.user.account_type == "business" %}
                             <a href="{% url 'marketplace:business_dashboard' %}" class="mobile-link">
                                 <i class="fas fa-chart-pie"></i>
-                                Dashboard
+                                <span>Dashboard</span>
                             </a>
 
                             <a href="{% url 'marketplace:listing_list' %}" class="mobile-link">
                                 <i class="fas fa-boxes-stacked"></i>
-                                Listings
+                                <span>Listings</span>
                             </a>
 
                             <a href="{% url 'marketplace:buyer_request_list' %}" class="mobile-link">
                                 <i class="fas fa-clipboard-list"></i>
-                                Buyer Requests
+                                <span>Buyer Requests</span>
                             </a>
 
                             <a href="{% url 'prices:market_price_list' %}" class="mobile-link">
                                 <i class="fas fa-chart-line"></i>
-                                Market Prices
+                                <span>Market Prices</span>
                             </a>
 
                             <a href="{% url 'profiles:business_profile_update' %}" class="mobile-link">
                                 <i class="fas fa-building"></i>
-                                Business Profile
+                                <span>Business Profile</span>
                             </a>
 
                             <a href="{% url 'profiles:business_document_upload' %}" class="mobile-link">
                                 <i class="fas fa-file-upload"></i>
-                                Documents
+                                <span>Documents</span>
                             </a>
 
                         {% elif request.user.account_type == "guest" %}
                             <a href="{% url 'marketplace:listing_list' %}" class="mobile-link">
                                 <i class="fas fa-store"></i>
-                                Products
+                                <span>Products</span>
                             </a>
 
                             <a href="{% url 'prices:market_price_list' %}" class="mobile-link">
                                 <i class="fas fa-chart-line"></i>
-                                Market Prices
+                                <span>Market Prices</span>
                             </a>
 
                         {% elif request.user.account_type == "admin" %}
                             <a href="{% url 'accounts:dashboard_redirect' %}" class="mobile-link">
                                 <i class="fas fa-gauge-high"></i>
-                                Admin Dashboard
+                                <span>Admin Dashboard</span>
                             </a>
 
                             <a href="{% url 'farms:farm_list' %}" class="mobile-link">
                                 <i class="fas fa-tractor"></i>
-                                Farms
+                                <span>Farms</span>
                             </a>
 
                             <a href="{% url 'marketplace:listing_list' %}" class="mobile-link">
                                 <i class="fas fa-store"></i>
-                                Marketplace
+                                <span>Marketplace</span>
                             </a>
 
                             <a href="{% url 'prices:market_price_list' %}" class="mobile-link">
                                 <i class="fas fa-chart-line"></i>
-                                Prices
+                                <span>Prices</span>
                             </a>
 
                             <a href="/admin/" class="mobile-link">
                                 <i class="fas fa-shield-alt"></i>
-                                Django Admin
+                                <span>Django Admin</span>
                             </a>
                         {% endif %}
 
@@ -419,39 +442,39 @@
 
                         <a href="#" class="mobile-link">
                             <i class="fas fa-cog"></i>
-                            Settings
+                            <span>Settings</span>
                         </a>
 
                         <a href="#" class="mobile-link">
                             <i class="fas fa-circle-question"></i>
-                            Help & Support
+                            <span>Help & Support</span>
                         </a>
 
                     {% else %}
 
                         <a href="{% url 'marketplace:listing_list' %}" class="mobile-link">
                             <i class="fas fa-store"></i>
-                            Marketplace
+                            <span>Marketplace</span>
                         </a>
 
                         <a href="{% url 'prices:market_price_list' %}" class="mobile-link">
                             <i class="fas fa-chart-line"></i>
-                            Market Prices
+                            <span>Market Prices</span>
                         </a>
 
                         <div class="my-4 border-t border-gray-100"></div>
 
                         <a href="{% url 'accounts:farmer_login' %}" class="mobile-link">
                             <i class="fas fa-user-check"></i>
-                            Farmer Login
+                            <span>Farmer Login</span>
                         </a>
 
                         <a href="{% url 'accounts:business_login' %}" class="mobile-link">
                             <i class="fas fa-building"></i>
-                            Business Login
+                            <span>Business Login</span>
                         </a>
 
-                        <a href="{% url 'accounts:farmer_request_otp' %}" class="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-green-700 to-emerald-500 px-4 py-3 text-sm font-bold text-white shadow-lg">
+                        <a href="{% url 'accounts:farmer_request_otp' %}" class="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-green-700 to-emerald-500 px-4 py-3 text-sm font-extrabold text-white shadow-lg shadow-green-700/20 transition hover:-translate-y-0.5">
                             <i class="fas fa-seedling"></i>
                             Get Started
                         </a>
@@ -463,7 +486,7 @@
                     <div class="border-t border-gray-100 p-4">
                         <form method="post" action="{% url 'accounts:logout' %}">
                             {% csrf_token %}
-                            <button type="submit" class="flex w-full items-center justify-center gap-2 rounded-2xl bg-red-50 px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-100 transition">
+                            <button type="submit" class="flex w-full items-center justify-center gap-2 rounded-2xl bg-red-50 px-4 py-3 text-sm font-extrabold text-red-600 hover:bg-red-100 transition">
                                 <i class="fas fa-sign-out-alt"></i>
                                 Logout
                             </button>
@@ -478,43 +501,105 @@
 
 <style>
     .nav-link {
+        position: relative;
         display: inline-flex;
         align-items: center;
         gap: 0.45rem;
         border-radius: 1rem;
-        padding: 0.6rem 0.8rem;
+        padding: 0.65rem 0.85rem;
         font-size: 0.875rem;
-        font-weight: 700;
+        font-weight: 800;
         color: #4b5563;
         transition: all 0.2s ease;
+        white-space: nowrap;
     }
 
-    .nav-link:hover {
+    .nav-link i:first-child {
+        color: #16a34a;
+        transition: transform 0.2s ease, color 0.2s ease;
+    }
+
+    .nav-link:hover,
+    .nav-link:focus-visible {
+        background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
+        color: #15803d;
+        outline: none;
+        box-shadow: inset 0 0 0 1px rgba(34, 197, 94, 0.12);
+    }
+
+    .nav-link:hover i:first-child {
+        transform: translateY(-1px);
+        color: #15803d;
+    }
+
+    .nav-chevron {
+        font-size: 0.65rem;
+        color: #9ca3af !important;
+        transition: transform 0.2s ease;
+    }
+
+    .group:hover .nav-chevron {
+        transform: rotate(180deg);
+    }
+
+    .nav-action-link {
+        border-radius: 1rem;
+        padding: 0.55rem 0.75rem;
+        font-size: 0.875rem;
+        font-weight: 800;
+        color: #4b5563;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+    }
+
+    .nav-action-link:hover,
+    .nav-action-link:focus-visible {
         background: #f0fdf4;
         color: #15803d;
+        outline: none;
     }
 
     .dropdown-menu {
         position: absolute;
         left: 0;
-        margin-top: 0.75rem;
-        width: 14rem;
-        border-radius: 1.5rem;
-        border: 1px solid #f3f4f6;
-        background: white;
-        padding: 0.5rem;
-        box-shadow: 0 24px 60px rgba(15, 23, 42, 0.12);
+        margin-top: 0.8rem;
+        width: 15.5rem;
+        border-radius: 1.6rem;
+        border: 1px solid #ecfdf5;
+        background: rgba(255, 255, 255, 0.98);
+        padding: 0.6rem;
+        box-shadow: 0 26px 70px rgba(15, 23, 42, 0.14);
         opacity: 0;
         visibility: hidden;
-        transform: translateY(8px);
+        transform: translateY(10px) scale(0.98);
+        transform-origin: top left;
         transition: all 0.2s ease;
         z-index: 60;
     }
 
-    .group:hover .dropdown-menu {
+    .dropdown-menu::before {
+        content: "";
+        position: absolute;
+        top: -0.75rem;
+        left: 0;
+        width: 100%;
+        height: 0.75rem;
+    }
+
+    .group:hover .dropdown-menu,
+    .group:focus-within .dropdown-menu {
         opacity: 1;
         visibility: visible;
-        transform: translateY(0);
+        transform: translateY(0) scale(1);
+    }
+
+    .dropdown-title {
+        padding: 0.4rem 0.75rem 0.55rem;
+        font-size: 0.68rem;
+        font-weight: 900;
+        color: #9ca3af;
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
     }
 
     .dropdown-link {
@@ -522,31 +607,39 @@
         align-items: center;
         gap: 0.75rem;
         border-radius: 1rem;
-        padding: 0.7rem 0.9rem;
+        padding: 0.78rem 0.9rem;
         font-size: 0.875rem;
-        font-weight: 600;
+        font-weight: 700;
         color: #4b5563;
         transition: all 0.2s ease;
     }
 
     .dropdown-link i {
-        width: 1.1rem;
+        width: 1.15rem;
         color: #16a34a;
+        transition: transform 0.2s ease;
     }
 
-    .dropdown-link:hover {
+    .dropdown-link:hover,
+    .dropdown-link:focus-visible {
         background: #f0fdf4;
         color: #15803d;
+        outline: none;
+        transform: translateX(2px);
+    }
+
+    .dropdown-link:hover i {
+        transform: scale(1.08);
     }
 
     .mobile-link {
         display: flex;
         align-items: center;
-        gap: 0.75rem;
-        border-radius: 1rem;
-        padding: 0.85rem 1rem;
-        font-size: 0.92rem;
-        font-weight: 700;
+        gap: 0.8rem;
+        border-radius: 1.1rem;
+        padding: 0.9rem 1rem;
+        font-size: 0.94rem;
+        font-weight: 800;
         color: #374151;
         transition: all 0.2s ease;
     }
@@ -556,19 +649,22 @@
         color: #16a34a;
     }
 
-    .mobile-link:hover {
-        background: #f0fdf4;
+    .mobile-link:hover,
+    .mobile-link:focus-visible {
+        background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
         color: #15803d;
+        outline: none;
+        transform: translateX(2px);
     }
 
     .mobile-sub-link {
         display: flex;
         align-items: center;
         gap: 0.75rem;
-        border-radius: 0.9rem;
-        padding: 0.7rem 0.9rem;
-        font-size: 0.86rem;
-        font-weight: 600;
+        border-radius: 0.95rem;
+        padding: 0.72rem 0.9rem;
+        font-size: 0.88rem;
+        font-weight: 700;
         color: #4b5563;
         transition: all 0.2s ease;
     }
@@ -578,9 +674,24 @@
         color: #16a34a;
     }
 
-    .mobile-sub-link:hover {
+    .mobile-sub-link:hover,
+    .mobile-sub-link:focus-visible {
         background: white;
         color: #15803d;
+        outline: none;
+        transform: translateX(2px);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .nav-link,
+        .dropdown-menu,
+        .dropdown-link,
+        .mobile-link,
+        .mobile-sub-link,
+        #mobile-drawer,
+        #mobile-menu-backdrop {
+            transition: none !important;
+        }
     }
 </style>
 
@@ -591,16 +702,24 @@
         const drawer = document.getElementById("mobile-drawer");
         const closeButton = document.getElementById("mobile-menu-close");
         const backdrop = document.getElementById("mobile-menu-backdrop");
+        const focusableSelector = 'a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])';
+        let previousFocus = null;
 
         function openMenu() {
             if (!mobileMenu || !drawer) return;
 
+            previousFocus = document.activeElement;
             mobileMenu.classList.remove("hidden");
+            mobileMenu.setAttribute("aria-hidden", "false");
+            if (menuButton) menuButton.setAttribute("aria-expanded", "true");
             document.body.style.overflow = "hidden";
 
             requestAnimationFrame(() => {
                 drawer.classList.remove("translate-x-full");
                 drawer.classList.add("translate-x-0");
+                if (backdrop) backdrop.classList.remove("opacity-0");
+                const firstFocusable = drawer.querySelector(focusableSelector);
+                if (firstFocusable) firstFocusable.focus();
             });
         }
 
@@ -609,11 +728,37 @@
 
             drawer.classList.remove("translate-x-0");
             drawer.classList.add("translate-x-full");
+            if (backdrop) backdrop.classList.add("opacity-0");
+            if (menuButton) menuButton.setAttribute("aria-expanded", "false");
 
             setTimeout(() => {
                 mobileMenu.classList.add("hidden");
+                mobileMenu.setAttribute("aria-hidden", "true");
                 document.body.style.overflow = "";
+                if (previousFocus && typeof previousFocus.focus === "function") {
+                    previousFocus.focus();
+                }
             }, 300);
+        }
+
+        function trapFocus(e) {
+            if (!mobileMenu || mobileMenu.classList.contains("hidden") || e.key !== "Tab") return;
+
+            const focusableItems = Array.from(drawer.querySelectorAll(focusableSelector))
+                .filter(el => !el.disabled && el.offsetParent !== null);
+
+            if (!focusableItems.length) return;
+
+            const first = focusableItems[0];
+            const last = focusableItems[focusableItems.length - 1];
+
+            if (e.shiftKey && document.activeElement === first) {
+                e.preventDefault();
+                last.focus();
+            } else if (!e.shiftKey && document.activeElement === last) {
+                e.preventDefault();
+                first.focus();
+            }
         }
 
         if (menuButton) menuButton.addEventListener("click", openMenu);
@@ -624,6 +769,11 @@
             if (e.key === "Escape" && mobileMenu && !mobileMenu.classList.contains("hidden")) {
                 closeMenu();
             }
+            trapFocus(e);
+        });
+
+        document.querySelectorAll("#mobile-menu a").forEach(link => {
+            link.addEventListener("click", closeMenu);
         });
     });
 </script>
