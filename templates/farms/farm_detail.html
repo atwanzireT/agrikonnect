@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}{{ farm.farm_name }} | AgroSync{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+  <div class="rounded-2xl bg-gradient-to-r from-green-700 to-emerald-600 p-6 shadow-xl text-white">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div>
+        <p class="text-green-100 text-sm">{{ farm.district }}{% if farm.subcounty %}, {{ farm.subcounty }}{% endif %}</p>
+        <h1 class="text-3xl font-bold">{{ farm.farm_name }}</h1>
+        <p class="mt-1 text-green-100">{{ farm.acreage }} acres{% if farm.village %} • {{ farm.village }}{% endif %}</p>
+      </div>
+      <div class="flex flex-wrap gap-3">
+        <a href="{% url 'farms:farm_project_create' farm.pk %}" class="inline-flex items-center gap-2 rounded-xl bg-white/20 px-5 py-3 text-sm font-semibold border border-white/30 hover:bg-white/30"><i class="fas fa-plus-circle"></i> Add Project</a>
+        <a href="{% url 'farms:farm_update' farm.pk %}" class="inline-flex items-center gap-2 rounded-xl bg-white px-5 py-3 text-sm font-semibold text-green-700 hover:bg-green-50"><i class="fas fa-edit"></i> Edit Farm</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div class="bg-white rounded-2xl border p-5"><p class="text-sm text-gray-500">Projects</p><p class="text-2xl font-bold">{{ projects|length }}</p></div>
+    <div class="bg-white rounded-2xl border p-5"><p class="text-sm text-gray-500">Sales</p><p class="text-2xl font-bold">UGX {{ total_sales|floatformat:0 }}</p></div>
+    <div class="bg-white rounded-2xl border p-5"><p class="text-sm text-gray-500">Expenses</p><p class="text-2xl font-bold">UGX {{ total_expenses|floatformat:0 }}</p></div>
+    <div class="bg-white rounded-2xl border p-5"><p class="text-sm text-gray-500">Profit</p><p class="text-2xl font-bold">UGX {{ estimated_profit|floatformat:0 }}</p></div>
+  </div>
+
+  <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+      <div><h2 class="text-xl font-bold text-gray-900">Projects</h2><p class="text-sm text-gray-500">Activities, harvests, expenses, and sales are linked to these projects.</p></div>
+      <a href="{% url 'farms:farm_project_create' farm.pk %}" class="text-sm font-semibold text-green-700 hover:text-green-900">+ Add project</a>
+    </div>
+    {% if projects %}
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-6">
+        {% for project in projects %}
+          <div class="rounded-2xl border border-gray-200 p-5 hover:shadow-md transition">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <h3 class="font-bold text-gray-900">{{ project.name }}</h3>
+                <p class="text-sm text-gray-500">{{ project.get_project_type_display }}</p>
+              </div>
+              <span class="rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700">{{ project.get_status_display }}</span>
+            </div>
+            <div class="mt-4 text-sm text-gray-600 space-y-1">
+              <p>Acreage: {{ project.acreage|default:"—" }}</p>
+              <p>Target: {{ project.target_quantity|default:"0" }} {{ project.target_unit }}</p>
+            </div>
+            <div class="mt-4 pt-4 border-t border-gray-100 flex justify-between text-sm">
+              <a href="{% url 'farms:project_update' project.pk %}" class="font-semibold text-green-700 hover:text-green-900">Edit</a>
+              <span class="text-gray-500">Started {{ project.start_date|date:"M d, Y" }}</span>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="p-10 text-center">
+        <p class="text-gray-500">No projects have been added to this farm yet.</p>
+        <a href="{% url 'farms:farm_project_create' farm.pk %}" class="mt-4 inline-flex items-center gap-2 rounded-xl bg-green-600 px-5 py-3 text-sm font-semibold text-white hover:bg-green-700"><i class="fas fa-plus"></i> Add first project</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

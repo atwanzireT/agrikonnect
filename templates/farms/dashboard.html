@@ -1,318 +1,136 @@
 {% extends "base.html" %}
-{% block title %}Farmer Dashboard | AgroSync{% endblock %}
+{% block title %}Farm Intelligence Dashboard | AgroSync{% endblock %}
+
+{% block extra_css %}
+<style>
+    .harvest-shell {
+        background: radial-gradient(circle at top left, rgba(22, 163, 74, .18), transparent 28%), linear-gradient(135deg, #f0fdf4 0%, #ffffff 48%, #ecfdf5 100%);
+        border-radius: 34px;
+        padding: 22px;
+        box-shadow: 0 30px 80px rgba(15, 23, 42, .12);
+    }
+    .harvest-card {
+        background: rgba(255,255,255,.92);
+        border: 1px solid rgba(226,232,240,.85);
+        border-radius: 24px;
+        box-shadow: 0 18px 35px rgba(15, 23, 42, .06);
+    }
+    .dark-farm-card {
+        background: linear-gradient(160deg, #0f5132, #0f5132 55%, #15803d);
+        color: white;
+        border-radius: 24px;
+        box-shadow: 0 24px 55px rgba(13, 59, 34, .28);
+    }
+    .metric-pill { background: #16a34a; color: #0f5132; }
+    .chart-bar { border-radius: 999px 999px 8px 8px; min-height: 24px; }
+    .bar-last { background: #0f5132; }
+    .bar-current { background: #16a34a; }
+    .mini-gauge {
+        width: 104px; height: 104px; border-radius: 999px;
+        background: conic-gradient(#0f5132 0 72%, #16a34a 72% 100%);
+        display: grid; place-items: center;
+    }
+    .mini-gauge div { width: 70px; height: 70px; border-radius: 999px; background: white; display:grid; place-items:center; }
+    .line-dot { width: 46px; height: 46px; border-radius: 999px; border: 4px solid white; box-shadow: 0 8px 18px rgba(15,23,42,.16); background: #16a34a; display:grid; place-items:center; }
+    .market-report { background: #dcfce7; border-radius: 30px; }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto space-y-6">
-    <!-- Page Header -->
-    <div class="mb-6">
-        <div class="flex items-center gap-2 text-sm text-gray-500 mb-2">
-            <i class="fas fa-chart-pie"></i>
-            <span>Dashboard</span>
-            <i class="fas fa-chevron-right text-xs"></i>
-            <span class="text-gray-900 font-medium">Overview</span>
-        </div>
-        <h1 class="text-2xl font-bold text-gray-900">Farmer Dashboard</h1>
-        <p class="text-gray-500 mt-1">Manage your farms, track harvests, monitor expenses, and analyze profitability.</p>
-    </div>
-
-    <!-- Quick Actions Bar -->
-    <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-            <div class="flex items-center gap-2">
-                <i class="fas fa-bolt text-green-600 text-sm"></i>
-                <span class="text-sm font-medium text-gray-700">Quick Actions:</span>
-            </div>
-            <div class="flex flex-wrap gap-2">
-                <a href="{% url 'farms:farm_create' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
-                    <i class="fas fa-plus-circle text-xs"></i>
-                    New Farm
-                </a>
-                <a href="{% url 'farms:harvest_create' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium rounded-lg transition-colors">
-                    <i class="fas fa-seedling text-xs"></i>
-                    Add Harvest
-                </a>
-                <a href="{% url 'farms:expense_create' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium rounded-lg transition-colors">
-                    <i class="fas fa-receipt text-xs"></i>
-                    Record Expense
-                </a>
-                <a href="{% url 'farms:sale_create' %}" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 text-sm font-medium rounded-lg transition-colors">
-                    <i class="fas fa-chart-line text-xs"></i>
-                    Record Sale
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Key Metrics Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <!-- Total Farms -->
-        <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-shadow">
-            <div class="flex items-start justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-500">Total Farms</p>
-                    <p class="text-2xl font-bold text-gray-900 mt-1">{{ total_farms }}</p>
-                    <p class="text-xs text-gray-400 mt-2">Active farm locations</p>
+<div class="harvest-shell">
+    <section class="space-y-6">
+            <div class="flex flex-col lg:flex-row gap-4 lg:items-center lg:justify-between">
+                <div class="relative flex-1 max-w-xl">
+                    <i class="fas fa-search absolute left-5 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    <input class="w-full rounded-3xl border-0 bg-white px-12 py-4 shadow-sm focus:ring-4 focus:ring-green-100" placeholder="Search farm, project, harvest...">
                 </div>
-                <div class="p-2 bg-green-50 rounded-lg">
-                    <i class="fas fa-tractor text-green-600 text-lg"></i>
+                <div class="flex items-center gap-3">
+                    <a href="{% url 'farms:project_create' %}" class="rounded-full bg-green-700 px-5 py-3 text-sm font-black text-white shadow-sm hover:bg-green-800"><i class="fas fa-plus mr-2"></i>Add Project</a>
                 </div>
             </div>
-        </div>
 
-        <!-- Total Harvests -->
-        <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-shadow">
-            <div class="flex items-start justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-500">Total Harvests</p>
-                    <p class="text-2xl font-bold text-gray-900 mt-1">{{ total_harvests|default:"0" }}</p>
-                    <p class="text-xs text-gray-400 mt-2">Seasonal harvest records</p>
-                </div>
-                <div class="p-2 bg-emerald-50 rounded-lg">
-                    <i class="fas fa-seedling text-emerald-600 text-lg"></i>
-                </div>
-            </div>
-        </div>
-
-        <!-- Total Acreage -->
-        <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-shadow">
-            <div class="flex items-start justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-500">Total Acreage</p>
-                    <p class="text-2xl font-bold text-gray-900 mt-1">{{ total_acreage|floatformat:1|default:"0" }}</p>
-                    <p class="text-xs text-gray-400 mt-2">Acres under cultivation</p>
-                </div>
-                <div class="p-2 bg-blue-50 rounded-lg">
-                    <i class="fas fa-map-marker-alt text-blue-600 text-lg"></i>
-                </div>
-            </div>
-        </div>
-
-        <!-- Total Expenses -->
-        <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-shadow">
-            <div class="flex items-start justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-500">Total Expenses</p>
-                    <p class="text-2xl font-bold text-rose-600 mt-1">UGX {{ total_expenses|floatformat:0|default:"0" }}</p>
-                    <p class="text-xs text-gray-400 mt-2">Operational costs</p>
-                </div>
-                <div class="p-2 bg-rose-50 rounded-lg">
-                    <i class="fas fa-wallet text-rose-600 text-lg"></i>
-                </div>
-            </div>
-        </div>
-
-        <!-- Estimated Profit -->
-        <div class="bg-white rounded-xl border {% if estimated_profit < 0 %}border-rose-200{% else %}border-emerald-200{% endif %} p-5 shadow-sm hover:shadow-md transition-shadow">
-            <div class="flex items-start justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-500">Estimated Profit</p>
-                    <p class="text-2xl font-bold {% if estimated_profit < 0 %}text-rose-600{% else %}text-emerald-700{% endif %} mt-1">
-                        UGX {{ estimated_profit|floatformat:0|default:"0" }}
-                    </p>
-                    <p class="text-xs text-gray-400 mt-2">Revenue minus expenses</p>
-                </div>
-                <div class="p-2 {% if estimated_profit < 0 %}bg-rose-50{% else %}bg-emerald-50{% endif %} rounded-lg">
-                    <i class="fas {% if estimated_profit < 0 %}fa-exclamation-triangle{% else %}fa-chart-line{% endif %} {% if estimated_profit < 0 %}text-rose-600{% else %}text-emerald-600{% endif %} text-lg"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Detailed Data Section -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Recent Farms Table -->
-        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50/50">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h2 class="text-base font-semibold text-gray-900">Recent Farms</h2>
-                        <p class="text-xs text-gray-500 mt-0.5">Your most recently added farm locations</p>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                <div class="harvest-card p-6">
+                    <p class="text-sm text-gray-400 font-semibold">Weather's today</p>
+                    <h3 class="mt-1 text-2xl font-black">Monday</h3>
+                    <p class="text-xs text-gray-400">Farm planning view</p>
+                    <div class="mt-5 flex items-center justify-between">
+                        <div><p class="text-4xl font-black">29<span class="text-xl">°c</span></p><p class="mt-1 text-xs text-gray-400">Good field conditions</p></div>
+                        <div class="mini-gauge"><div><span class="text-lg font-black">72%</span></div></div>
                     </div>
-                    <a href="{% url 'farms:farm_list' %}" class="text-sm text-green-700 hover:text-green-800 font-medium flex items-center gap-1">
-                        View all farms
-                        <i class="fas fa-arrow-right text-xs"></i>
-                    </a>
+                    <div class="mt-5 grid grid-cols-3 gap-2 text-xs text-gray-500"><span><i class="fas fa-wind"></i> 0km/h</span><span><i class="fas fa-droplet"></i> 86%</span><span><i class="fas fa-cloud-rain"></i> 1007hPa</span></div>
                 </div>
-            </div>
 
-            {% if recent_farms %}
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Farm Name</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">District</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acreage</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Main Crop</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-100">
-                        {% for farm in recent_farms %}
-                        <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="px-6 py-3 whitespace-nowrap">
-                                <div class="flex items-center gap-2">
-                                    <i class="fas fa-tree text-green-600 text-sm"></i>
-                                    <span class="text-sm font-medium text-gray-900">{{ farm.farm_name }}</span>
-                                </div>
-                            </td>
-                            <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-600">{{ farm.district }}</td>
-                            <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-600">{{ farm.acreage }} acres</td>
-                            <td class="px-6 py-3 whitespace-nowrap">
-                                {% if farm.main_crop %}
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700">
-                                        {{ farm.main_crop }}
-                                    </span>
-                                {% else %}
-                                    <span class="text-sm text-gray-400">—</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            {% else %}
-            <div class="text-center py-12">
-                <i class="fas fa-tractor text-gray-300 text-4xl mb-3"></i>
-                <p class="text-gray-500 text-sm">No farms added yet</p>
-                <a href="{% url 'farms:farm_create' %}" class="inline-flex items-center gap-1 mt-2 text-sm text-green-600 hover:text-green-700 font-medium">
-                    Add your first farm
-                    <i class="fas fa-plus-circle text-xs"></i>
-                </a>
-            </div>
-            {% endif %}
-        </div>
-
-        <!-- Recent Sales Table -->
-        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50/50">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <h2 class="text-base font-semibold text-gray-900">Recent Sales</h2>
-                        <p class="text-xs text-gray-500 mt-0.5">Your most recent sales transactions</p>
+                <div class="harvest-card p-6 overflow-hidden">
+                    <div class="flex items-center justify-between"><h3 class="font-black">Project growth activity</h3><span class="text-xs rounded-full bg-gray-100 px-3 py-1 font-bold">Weekly</span></div>
+                    <div class="relative mt-8 h-44">
+                        <div class="absolute left-4 right-4 top-24 h-1 rounded-full bg-gradient-to-r from-green-800 via-green-600 to-green-700 rotate-[-10deg]"></div>
+                        <div class="absolute left-2 top-24 line-dot"><i class="fas fa-seedling text-green-900"></i></div>
+                        <div class="absolute left-1/2 -translate-x-1/2 top-12 line-dot"><i class="fas fa-leaf text-green-900"></i></div>
+                        <div class="absolute right-5 top-2 line-dot"><i class="fas fa-wheat-awn text-green-900"></i></div>
+                        <div class="absolute bottom-0 left-0 right-0 flex justify-between text-[11px] text-gray-500 font-semibold"><span>Seed Phase</span><span>Growth</span><span>Production</span></div>
                     </div>
-                    <a href="{% url 'farms:sale_list' %}" class="text-sm text-green-700 hover:text-green-800 font-medium flex items-center gap-1">
-                        View all sales
-                        <i class="fas fa-arrow-right text-xs"></i>
-                    </a>
+                </div>
+
+                <div class="dark-farm-card p-6 overflow-hidden">
+                    <div class="h-36 rounded-3xl bg-gradient-to-br from-green-100 to-green-200 mb-5 flex items-center justify-center text-green-950">
+                        <i class="fas fa-tractor text-6xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-black">Farm Projects</h3>
+                    <p class="mt-2 text-sm text-green-100">Track maize, dairy, poultry, fish farming, coffee and every enterprise as a project.</p>
+                    <a href="{% url 'farms:project_list' %}" class="mt-5 inline-flex h-12 w-12 items-center justify-center rounded-full bg-green-600 text-white"><i class="fas fa-play"></i></a>
                 </div>
             </div>
 
-            {% if recent_sales %}
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Crop</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Farm</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-100">
-                        {% for sale in recent_sales %}
-                        <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="px-6 py-3 whitespace-nowrap">
-                                <div class="flex items-center gap-2">
-                                    <i class="fas fa-apple-alt text-emerald-600 text-sm"></i>
-                                    <span class="text-sm font-medium text-gray-900">{{ sale.crop_name }}</span>
-                                </div>
-                            </td>
-                            <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-600">{{ sale.farm|default:"—" }}</td>
-                            <td class="px-6 py-3 whitespace-nowrap">
-                                <span class="text-sm font-semibold text-emerald-700">UGX {{ sale.total_amount|floatformat:0 }}</span>
-                            </td>
-                            <td class="px-6 py-3 whitespace-nowrap text-sm text-gray-500">{{ sale.sale_date|date:"M d, Y" }}</td>
-                        </tr>
+            <div class="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-5">
+                <div class="harvest-card p-6">
+                    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+                        <div><h2 class="text-2xl font-black">Summary of production</h2><p class="text-sm text-gray-400">Comparing project activity and sales performance</p></div>
+                        <div class="flex gap-2 text-xs font-bold"><span class="flex items-center gap-2"><i class="h-3 w-3 rounded bg-green-600 inline-block"></i>Current Year</span><span class="flex items-center gap-2"><i class="h-3 w-3 rounded bg-green-950 inline-block"></i>Last Year</span></div>
+                    </div>
+                    <div class="h-72 flex items-end justify-between gap-3 border-b border-gray-200 px-2 overflow-x-auto">
+                        {% for month in production_chart %}
+                        <div class="flex flex-col items-center gap-2 flex-1 min-w-10">
+                            <div class="flex items-end gap-1 h-56" title="{{ month.label }}: {{ month.current|floatformat:0 }} current / {{ month.last|floatformat:0 }} last year">
+                                <span class="chart-bar bar-current w-5" style="height:{{ month.current_percent }}%"></span>
+                                <span class="chart-bar bar-last w-5" style="height:{{ month.last_percent }}%"></span>
+                            </div>
+                            <span class="text-[10px] font-bold text-gray-400">{{ month.label }}</span>
+                        </div>
                         {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            {% else %}
-            <div class="text-center py-12">
-                <i class="fas fa-chart-line text-gray-300 text-4xl mb-3"></i>
-                <p class="text-gray-500 text-sm">No sales recorded yet</p>
-                <a href="{% url 'farms:sale_create' %}" class="inline-flex items-center gap-1 mt-2 text-sm text-emerald-600 hover:text-emerald-700 font-medium">
-                    Record your first sale
-                    <i class="fas fa-plus-circle text-xs"></i>
-                </a>
-            </div>
-            {% endif %}
-        </div>
-    </div>
-
-    <!-- Financial Summary Section -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Revenue Card -->
-        <div class="bg-gradient-to-br from-emerald-50 to-white rounded-xl border border-emerald-100 p-5 shadow-sm">
-            <div class="flex items-center justify-between mb-3">
-                <div class="p-2 bg-white rounded-lg shadow-sm">
-                    <i class="fas fa-chart-line text-emerald-600 text-xl"></i>
+                    </div>
                 </div>
-                <span class="text-xs font-medium text-emerald-700 bg-emerald-100 px-2 py-1 rounded-full">Revenue</span>
-            </div>
-            <p class="text-2xl font-bold text-gray-900">UGX {{ total_revenue|floatformat:0|default:"0" }}</p>
-            <p class="text-xs text-gray-500 mt-2">Total revenue from all sales</p>
-            <div class="mt-3 pt-3 border-t border-emerald-100">
-                <p class="text-xs text-gray-500">
-                    <i class="fas fa-calendar-alt mr-1"></i> Lifetime earnings
-                </p>
-            </div>
-        </div>
 
-        <!-- Expenses Card -->
-        <div class="bg-gradient-to-br from-rose-50 to-white rounded-xl border border-rose-100 p-5 shadow-sm">
-            <div class="flex items-center justify-between mb-3">
-                <div class="p-2 bg-white rounded-lg shadow-sm">
-                    <i class="fas fa-receipt text-rose-600 text-xl"></i>
+                <div class="space-y-5">
+                    <div class="dark-farm-card p-6">
+                        <p class="text-green-100 text-sm font-semibold">Profitability</p>
+                        <h3 class="mt-1 text-3xl font-black">UGX {{ estimated_profit|floatformat:0 }}</h3>
+                        <p class="mt-4 text-sm text-green-100">Revenue: UGX {{ total_sales|floatformat:0 }}</p>
+                        <p class="text-sm text-green-100">Expenses: UGX {{ total_expenses|floatformat:0 }}</p>
+                    </div>
+                    <div class="harvest-card p-5">
+                        <h3 class="font-black mb-4">Operations</h3>
+                        <div class="grid grid-cols-2 gap-3 text-center">
+                            <div class="rounded-2xl bg-green-50 p-4"><p class="text-2xl font-black text-green-900">{{ total_farms }}</p><p class="text-xs text-gray-500">Farms</p></div>
+                            <div class="rounded-2xl bg-green-50 p-4"><p class="text-2xl font-black text-green-900">{{ total_projects }}</p><p class="text-xs text-gray-500">Projects</p></div>
+                            <div class="rounded-2xl bg-green-50 p-4"><p class="text-2xl font-black text-green-900">{{ total_harvests }}</p><p class="text-xs text-gray-500">Harvests</p></div>
+                            <div class="rounded-2xl bg-green-50 p-4"><p class="text-2xl font-black text-green-900">{{ total_acreage|floatformat:1 }}</p><p class="text-xs text-gray-500">Acres</p></div>
+                        </div>
+                    </div>
                 </div>
-                <span class="text-xs font-medium text-rose-700 bg-rose-100 px-2 py-1 rounded-full">Costs</span>
             </div>
-            <p class="text-2xl font-bold text-gray-900">UGX {{ total_expenses|floatformat:0|default:"0" }}</p>
-            <p class="text-xs text-gray-500 mt-2">Total operational expenses</p>
-            <div class="mt-3 pt-3 border-t border-rose-100">
-                <p class="text-xs text-gray-500">
-                    <i class="fas fa-chart-pie mr-1"></i> Track expenses by category
-                </p>
-            </div>
-        </div>
 
-        <!-- Profitability Card -->
-        <div class="bg-gradient-to-br from-blue-50 to-white rounded-xl border border-blue-100 p-5 shadow-sm">
-            <div class="flex items-center justify-between mb-3">
-                <div class="p-2 bg-white rounded-lg shadow-sm">
-                    <i class="fas fa-percent text-blue-600 text-xl"></i>
+            <div class="market-report p-6">
+                <div class="flex items-center justify-between mb-5"><h2 class="text-2xl font-black text-gray-950">Market Analysis Report</h2><span class="text-2xl font-black">2026</span></div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <div class="harvest-card p-5"><div class="-mt-8 mx-auto w-max rounded-xl bg-green-800 px-8 py-2 text-sm font-black text-white">Sales Growth</div><div class="mt-8 space-y-3"><p class="text-3xl font-black text-green-900">UGX {{ total_sales|floatformat:0 }}</p><p class="text-sm text-gray-500">Total sales recorded from the database.</p><p class="text-xs text-gray-400">{{ recent_sales|length }} latest sales shown in records.</p></div></div>
+                    <div class="harvest-card p-5"><div class="-mt-8 mx-auto w-max rounded-xl bg-green-800 px-8 py-2 text-sm font-black text-white">Project Mix</div><div class="mt-8 space-y-3">{% for item in project_mix %}<div><div class="flex justify-between text-xs font-bold"><span>{{ item.label }}</span><span>{{ item.percent }}%</span></div><div class="mt-1 h-2 rounded-full bg-green-100"><div class="h-2 rounded-full bg-green-800" style="width:{{ item.percent }}%"></div></div></div>{% empty %}<p class="text-sm text-gray-500">No projects recorded yet.</p>{% endfor %}</div></div>
+                    <div class="harvest-card p-5"><div class="-mt-8 mx-auto w-max rounded-xl bg-green-800 px-8 py-2 text-sm font-black text-white">Top Projects</div><div class="mt-8 space-y-3">{% for project in top_projects %}<div class="flex items-center justify-between gap-3"><div><p class="text-sm font-black text-green-950">{{ project.name }}</p><p class="text-xs text-gray-400">{{ project.farm.farm_name }}</p></div><p class="text-xs font-black text-green-800">UGX {{ project.actual_revenue|floatformat:0 }}</p></div>{% empty %}<p class="text-sm text-gray-500">No project revenue yet.</p>{% endfor %}</div></div>
                 </div>
-                <span class="text-xs font-medium text-blue-700 bg-blue-100 px-2 py-1 rounded-full">Margin</span>
+                <div class="mt-5 harvest-card p-5 grid grid-cols-2 md:grid-cols-5 gap-3 text-center">
+                    {% for farm in top_farms %}<div><p class="text-2xl font-black text-green-800">UGX {{ farm.revenue|default:0|floatformat:0 }}</p><p class="text-xs truncate">{{ farm.farm_name }}</p></div>{% empty %}<div class="col-span-full"><p class="text-sm text-gray-500">No farm sales recorded yet.</p></div>{% endfor %}
+                </div>
             </div>
-            <p class="text-2xl font-bold text-gray-900">
-                {% if total_revenue > 0 %}
-                    {{ profit_margin_percentage|floatformat:1|default:"0" }}%
-                {% else %}
-                    0%
-                {% endif %}
-            </p>
-            <p class="text-xs text-gray-500 mt-2">Profit margin percentage</p>
-            <div class="mt-3 pt-3 border-t border-blue-100">
-                <p class="text-xs text-gray-500">
-                    <i class="fas fa-info-circle mr-1"></i> (Revenue - Expenses) / Revenue × 100
-                </p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Advisory Notice -->
-    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <div class="flex items-start gap-3">
-            <i class="fas fa-lightbulb text-blue-600 text-lg mt-0.5"></i>
-            <div>
-                <h3 class="text-sm font-semibold text-blue-900">Financial Insight</h3>
-                <p class="text-sm text-blue-800 mt-0.5">
-                    Regular expense tracking helps optimize your farm's profitability. 
-                    <a href="#" class="font-medium underline hover:no-underline">View detailed analytics →</a>
-                </p>
-            </div>
-        </div>
-    </div>
+    </section>
 </div>
 {% endblock %}

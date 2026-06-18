@@ -514,11 +514,11 @@ class FarmerOfflineSyncAPIView(APIView):
                         instance = model.objects.filter(id=server_id, farmer=user).first()
                     if instance is None and client_id:
                         instance = model.objects.filter(client_id=client_id, farmer=user).first()
-                    serializer = serializer_class(instance, data=item, partial=bool(instance))
+                    serializer = serializer_class(instance, data=item, partial=bool(instance), context={"request": request})
                     if serializer.is_valid():
                         try:
                             obj = serializer.save(farmer=user, sync_status="synced")
-                            uploaded[key].append(serializer_class(obj).data)
+                            uploaded[key].append(serializer_class(obj, context={"request": request}).data)
                         except IntegrityError as exc:
                             errors[key].append({"client_id": client_id, "error": str(exc)})
                     else:
@@ -531,7 +531,7 @@ class FarmerOfflineSyncAPIView(APIView):
             qs = model.objects.filter(farmer=user)
             if dt:
                 qs = qs.filter(updated_at__gt=dt)
-            download[key] = serializer_class(qs, many=True).data
+            download[key] = serializer_class(qs, many=True, context={"request": request}).data
 
         from django.utils import timezone
         return Response({

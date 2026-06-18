@@ -35,19 +35,16 @@ def _find_user_by_identifier(identifier: str):
     if not identifier:
         return None
 
-    # Email login
     if "@" in identifier:
         user = User.objects.filter(email__iexact=identifier).first()
         if user:
             return user
 
-    # Phone login, including 077..., 25677..., +25677..., 77...
     for phone in _phone_candidates(identifier):
         user = User.objects.filter(phone=phone).first()
         if user:
             return user
 
-    # Last fallback for projects that still have a username field/custom migration.
     try:
         return User.objects.filter(username__iexact=identifier).first()
     except Exception:
@@ -68,7 +65,6 @@ class AccountRegistrationSerializer(serializers.Serializer):
         if not phone and not email:
             raise serializers.ValidationError("Provide either phone or email.")
         if phone:
-            # Store phone in a consistent Uganda format where possible.
             candidates = _phone_candidates(phone)
             phone = next((p for p in candidates if p.startswith("+256")), phone)
             if User.objects.filter(phone__in=candidates).exists():
@@ -98,7 +94,6 @@ class AccountRegistrationSerializer(serializers.Serializer):
 
 
 class FarmerLoginSerializer(serializers.Serializer):
-    # Mobile app sends `identifier`. Older builds may still send `username`, `phone`, `email`, or `phone_or_email`.
     identifier = serializers.CharField(required=False, allow_blank=True)
     username = serializers.CharField(required=False, allow_blank=True)
     phone_or_email = serializers.CharField(required=False, allow_blank=True)
@@ -123,19 +118,15 @@ class FarmerLoginSerializer(serializers.Serializer):
         user = None
 
         if user_obj:
-            # The custom User model uses email as USERNAME_FIELD, so authenticate with email first.
             login_key = getattr(user_obj, User.USERNAME_FIELD, None) or user_obj.email or user_obj.phone
             user = authenticate(self.context.get("request"), username=login_key, password=password)
             if user is None and user_obj.email:
                 user = authenticate(self.context.get("request"), username=user_obj.email, password=password)
             if user is None and user_obj.phone:
                 user = authenticate(self.context.get("request"), username=user_obj.phone, password=password)
-
-            # Safe fallback: same password check as web backend, useful where USERNAME_FIELD differs.
             if user is None and user_obj.check_password(password):
                 user = user_obj
         else:
-            # Fallback through configured auth backends.
             user = authenticate(self.context.get("request"), username=identifier, password=password)
 
         if not user:
@@ -166,46 +157,111 @@ class OfflineModelSerializer(serializers.ModelSerializer):
     is_deleted = serializers.BooleanField(required=False)
 
 
-class FarmSerializer(OfflineModelSerializer):
+class FarmerOwnedModelSerializer(OfflineModelSerializer):
+    """Base serializer for models that belong to the logged-in farmer.
+
+    It attaches request.user before validation/save so API creates do not hit
+    `RelatedObjectDoesNotExist: <Model> has no farmer`, and it prevents mobile
+    clients from posting another farmer's farm/project IDs.
+    """
+    farmer = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+        if not user or not getattr(user, "is_authenticated", False):
+            return attrs
+
+        farm = attrs.get("farm") or getattr(self.instance, "farm", None)
+        project = attrs.get("project") or getattr(self.instance, "project", None)
+        harvest = attrs.get("harvest") or getattr(self.instance, "harvest", None)
+
+        if project and not farm:
+            attrs["farm"] = project.farm
+            farm = project.farm
+
+        if harvest:
+            if getattr(harvest, "farmer_id", None) != user.id:
+                raise serializers.ValidationError({"harvest": "This harvest does not belong to your account."})
+            if not project and getattr(harvest, "project", None):
+                attrs["project"] = harvest.project
+                project = harvest.project
+            if not farm and getattr(harvest, "farm", None):
+                attrs["farm"] = harvest.farm
+                farm = harvest.farm
+
+        if farm and getattr(farm, "farmer_id", None) != user.id:
+            raise serializers.ValidationError({"farm": "This farm does not belong to your account."})
+        if project and getattr(project, "farmer_id", None) != user.id:
+            raise serializers.ValidationError({"project": "This project does not belong to your account."})
+        if project and farm and getattr(project, "farm_id", None) != getattr(farm, "id", None):
+            raise serializers.ValidationError({"project": "The selected project must belong to the selected farm."})
+        return attrs
+
+    def create(self, validated_data):
+        request = self.context.get("request")
+        if request and getattr(request, "user", None) and getattr(request.user, "is_authenticated", False):
+            validated_data["farmer"] = request.user
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        request = self.context.get("request")
+        if request and getattr(request, "user", None) and getattr(request.user, "is_authenticated", False):
+            validated_data["farmer"] = request.user
+        return super().update(instance, validated_data)
+
+
+class FarmSerializer(FarmerOwnedModelSerializer):
     class Meta:
         model = Farm
         fields = "__all__"
-        read_only_fields = ["farmer", "created_at", "updated_at", "sync_status"]
+        read_only_fields = ["created_at", "updated_at", "sync_status"]
 
 
-class FarmActivitySerializer(OfflineModelSerializer):
+class ProjectLinkedSerializer(FarmerOwnedModelSerializer):
+    class Meta:
+        abstract = True
+        extra_kwargs = {
+            "farm": {"required": False, "allow_null": True},
+        }
+
+
+class FarmActivitySerializer(ProjectLinkedSerializer):
     total_cost = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
 
     class Meta:
         model = FarmActivity
         fields = "__all__"
-        read_only_fields = ["farmer", "created_at", "updated_at", "sync_status", "total_cost"]
+        read_only_fields = ["created_at", "updated_at", "sync_status", "total_cost"]
+        extra_kwargs = {"farm": {"required": False, "allow_null": True}}
 
 
-class HarvestRecordSerializer(OfflineModelSerializer):
+class HarvestRecordSerializer(ProjectLinkedSerializer):
     class Meta:
         model = HarvestRecord
         fields = "__all__"
-        read_only_fields = ["farmer", "created_at", "updated_at", "sync_status"]
+        read_only_fields = ["created_at", "updated_at", "sync_status"]
+        extra_kwargs = {"farm": {"required": False, "allow_null": True}}
 
 
-class FarmExpenseSerializer(OfflineModelSerializer):
+class FarmExpenseSerializer(ProjectLinkedSerializer):
     class Meta:
         model = FarmExpense
         fields = "__all__"
-        read_only_fields = ["farmer", "created_at", "updated_at", "sync_status"]
+        read_only_fields = ["created_at", "updated_at", "sync_status"]
+        extra_kwargs = {"farm": {"required": False, "allow_null": True}}
 
 
-class SalesRecordSerializer(OfflineModelSerializer):
+class SalesRecordSerializer(ProjectLinkedSerializer):
     class Meta:
         model = SalesRecord
         fields = "__all__"
-        read_only_fields = ["farmer", "total_amount", "created_at", "updated_at", "sync_status"]
+        read_only_fields = ["total_amount", "created_at", "updated_at", "sync_status"]
+        extra_kwargs = {"farm": {"required": False, "allow_null": True}}
 
 
-
-
-class FarmProjectSerializer(OfflineModelSerializer):
+class FarmProjectSerializer(FarmerOwnedModelSerializer):
     planned_profit = serializers.DecimalField(max_digits=14, decimal_places=2, read_only=True)
     actual_cost = serializers.DecimalField(max_digits=14, decimal_places=2, read_only=True)
     actual_revenue = serializers.DecimalField(max_digits=14, decimal_places=2, read_only=True)
@@ -217,33 +273,36 @@ class FarmProjectSerializer(OfflineModelSerializer):
         model = FarmProject
         fields = "__all__"
         read_only_fields = [
-            "farmer", "created_at", "updated_at", "sync_status",
+            "created_at", "updated_at", "sync_status",
             "planned_profit", "actual_cost", "actual_revenue",
             "estimated_profit", "projected_profit", "cost_variance",
         ]
 
 
-class ProjectPlannedActivitySerializer(OfflineModelSerializer):
+class ProjectPlannedActivitySerializer(ProjectLinkedSerializer):
     cost_variance = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
 
     class Meta:
         model = ProjectPlannedActivity
         fields = "__all__"
-        read_only_fields = ["farmer", "created_at", "updated_at", "sync_status", "cost_variance"]
+        read_only_fields = ["created_at", "updated_at", "sync_status", "cost_variance"]
+        extra_kwargs = {"farm": {"required": False, "allow_null": True}}
 
 
-class ProjectInputRecordSerializer(OfflineModelSerializer):
+class ProjectInputRecordSerializer(ProjectLinkedSerializer):
     class Meta:
         model = ProjectInputRecord
         fields = "__all__"
-        read_only_fields = ["farmer", "total_cost", "created_at", "updated_at", "sync_status"]
+        read_only_fields = ["total_cost", "created_at", "updated_at", "sync_status"]
+        extra_kwargs = {"farm": {"required": False, "allow_null": True}}
 
 
-class ProjectRevenueRecordSerializer(OfflineModelSerializer):
+class ProjectRevenueRecordSerializer(ProjectLinkedSerializer):
     class Meta:
         model = ProjectRevenueRecord
         fields = "__all__"
-        read_only_fields = ["farmer", "amount", "created_at", "updated_at", "sync_status"]
+        read_only_fields = ["amount", "created_at", "updated_at", "sync_status"]
+        extra_kwargs = {"farm": {"required": False, "allow_null": True}}
 
 
 class ProduceListingSerializer(serializers.ModelSerializer):
@@ -257,6 +316,15 @@ class ProduceListingSerializer(serializers.ModelSerializer):
         model = ProduceListing
         fields = "__all__"
         read_only_fields = ["farmer", "created_at", "updated_at"]
+
+    def validate(self, attrs):
+        attrs = super().validate(attrs)
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+        farm = attrs.get("farm") or getattr(self.instance, "farm", None)
+        if farm and user and getattr(user, "is_authenticated", False) and getattr(farm, "farmer_id", None) != user.id:
+            raise serializers.ValidationError({"farm": "This farm does not belong to your account."})
+        return attrs
 
 
 class BuyerRequestSerializer(serializers.ModelSerializer):

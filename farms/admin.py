@@ -15,10 +15,10 @@ class FarmAdmin(admin.ModelAdmin):
         "subcounty",
         "village",
         "acreage",
-        "main_crop",
+        "projects_display",
         "created_at",
     )
-    list_filter = ("district", "main_crop", "created_at")
+    list_filter = ("district", "created_at")
     search_fields = (
         "farm_name",
         "farmer__full_name",
@@ -27,7 +27,6 @@ class FarmAdmin(admin.ModelAdmin):
         "district",
         "subcounty",
         "village",
-        "main_crop",
     )
     autocomplete_fields = ("farmer",)
     readonly_fields = ("id", "created_at", "updated_at")
@@ -38,6 +37,7 @@ class FarmAdmin(admin.ModelAdmin):
 class HarvestRecordAdmin(admin.ModelAdmin):
     list_display = (
         "crop_name",
+        "project",
         "farm",
         "farmer",
         "season",
@@ -47,7 +47,7 @@ class HarvestRecordAdmin(admin.ModelAdmin):
         "harvest_date",
         "created_at",
     )
-    list_filter = ("crop_name", "season", "unit", "harvest_date", "created_at")
+    list_filter = ("season", "unit", "harvest_date", "created_at")
     search_fields = (
         "crop_name",
         "variety",
@@ -56,7 +56,7 @@ class HarvestRecordAdmin(admin.ModelAdmin):
         "farmer__full_name",
         "farmer__phone",
     )
-    autocomplete_fields = ("farm", "farmer")
+    autocomplete_fields = ("farm", "project", "farmer")
     readonly_fields = ("id", "created_at", "updated_at")
     ordering = ("-harvest_date", "-created_at")
 
@@ -81,7 +81,7 @@ class FarmExpenseAdmin(admin.ModelAdmin):
         "farmer__full_name",
         "receipt_number",
     )
-    autocomplete_fields = ("farm", "farmer")
+    autocomplete_fields = ("farm", "project", "farmer")
     readonly_fields = ("id", "created_at", "updated_at")
     ordering = ("-expense_date", "-created_at")
 
@@ -90,6 +90,7 @@ class FarmExpenseAdmin(admin.ModelAdmin):
 class SalesRecordAdmin(admin.ModelAdmin):
     list_display = (
         "crop_name",
+        "project",
         "farm",
         "farmer",
         "quantity",
@@ -100,7 +101,7 @@ class SalesRecordAdmin(admin.ModelAdmin):
         "sale_channel",
         "sale_date",
     )
-    list_filter = ("crop_name", "sale_channel", "sale_date", "created_at")
+    list_filter = ("sale_channel", "sale_date", "created_at")
     search_fields = (
         "crop_name",
         "buyer_name",
@@ -108,16 +109,16 @@ class SalesRecordAdmin(admin.ModelAdmin):
         "farmer__full_name",
         "farmer__phone",
     )
-    autocomplete_fields = ("farm", "farmer")
+    autocomplete_fields = ("farm", "project", "farmer")
     readonly_fields = ("id", "total_amount", "created_at", "updated_at")
     ordering = ("-sale_date", "-created_at")
 
 @admin.register(FarmActivity)
 class FarmActivityAdmin(admin.ModelAdmin):
-    list_display = ("title", "activity_type", "farm", "farmer", "activity_date", "labour_cost", "input_cost", "created_at")
+    list_display = ("title", "activity_type", "project", "farm", "farmer", "activity_date", "labour_cost", "input_cost", "created_at")
     list_filter = ("activity_type", "activity_date", "created_at")
     search_fields = ("title", "crop_name", "notes", "farm__farm_name", "farmer__full_name", "farmer__phone")
-    autocomplete_fields = ("farm", "farmer")
+    autocomplete_fields = ("farm", "project", "farmer")
     readonly_fields = ("id", "total_cost", "created_at", "updated_at")
     ordering = ("-activity_date", "-created_at")
 

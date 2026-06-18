@@ -16,6 +16,12 @@ urlpatterns = [
     path("farms/<uuid:pk>/", views.farm_detail, name="farm_detail"),
     path("farms/<uuid:pk>/edit/", views.farm_update, name="farm_update"),
 
+    # Farm Projects
+    path("projects/", views.project_list, name="project_list"),
+    path("projects/create/", views.project_create, name="project_create"),
+    path("farms/<uuid:farm_pk>/projects/create/", views.project_create, name="farm_project_create"),
+    path("projects/<uuid:pk>/edit/", views.project_update, name="project_update"),
+
     # Harvests
     path("harvests/", views.harvest_list, name="harvest_list"),
     path("harvests/create/", views.harvest_create, name="harvest_create"),

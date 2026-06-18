@@ -1,328 +1,35 @@
 {% extends "base.html" %}
 {% block title %}{{ title }} | AgroSync{% endblock %}
-
 {% block content %}
-<div class="max-w-5xl mx-auto">
-    <!-- Header with icon -->
-    <div class="mb-8">
-        <div class="flex items-center gap-3 mb-2">
-            <div class="p-2 bg-green-100 rounded-xl">
-                <i class="fas fa-tractor text-green-700 text-xl"></i>
-            </div>
-            <div>
-                <h1 class="text-2xl font-bold text-gray-900">{{ title }}</h1>
-                <p class="text-sm text-gray-500 mt-0.5">Register a new farm to start tracking your agricultural activities</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Main Form Card -->
-    <div class="bg-white rounded-2xl border border-gray-200 shadow-lg overflow-hidden">
-        <!-- Progress indicator -->
-        <div class="h-1 bg-gradient-to-r from-green-500 to-green-600 w-full"></div>
-        
-        <form method="post">
-            {% csrf_token %}
-            
-            <!-- Form Body with Grid Layout -->
-            <div class="p-6 md:p-8">
-                <!-- Two Column Grid for main fields -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Left Column -->
-                    <div class="space-y-6">
-                        <!-- Farm Name Field -->
-                        <div class="group">
-                            <label for="{{ form.farm_name.id_for_label }}" class="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-tree text-green-600 text-xs"></i>
-                                Farm Name
-                                <span class="text-red-500 text-xs ml-1">*</span>
-                            </label>
-                            <div class="relative">
-                                {{ form.farm_name }}
-                            </div>
-                            {% if form.farm_name.help_text %}
-                                <p class="mt-1 text-xs text-gray-400 flex items-center gap-1">
-                                    <i class="fas fa-info-circle text-gray-300"></i>
-                                    {{ form.farm_name.help_text }}
-                                </p>
-                            {% endif %}
-                            {% if form.farm_name.errors %}
-                                <div class="mt-2 flex items-center gap-2 text-sm text-red-600 bg-red-50 p-2 rounded-lg">
-                                    <i class="fas fa-exclamation-circle"></i>
-                                    {% for error in form.farm_name.errors %}
-                                        <span>{{ error }}</span>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                        </div>
-
-                        <!-- District Field -->
-                        <div class="group">
-                            <label for="{{ form.district.id_for_label }}" class="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-map-marker-alt text-green-600 text-xs"></i>
-                                District
-                                <span class="text-red-500 text-xs ml-1">*</span>
-                            </label>
-                            {{ form.district }}
-                            {% if form.district.errors %}
-                                <div class="mt-2 flex items-center gap-2 text-sm text-red-600 bg-red-50 p-2 rounded-lg">
-                                    <i class="fas fa-exclamation-circle"></i>
-                                    {% for error in form.district.errors %}
-                                        <span>{{ error }}</span>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                        </div>
-
-                        <!-- Subcounty Field -->
-                        <div class="group">
-                            <label for="{{ form.subcounty.id_for_label }}" class="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-location-dot text-green-600 text-xs"></i>
-                                Subcounty
-                            </label>
-                            {{ form.subcounty }}
-                            {% if form.subcounty.errors %}
-                                <div class="mt-2 flex items-center gap-2 text-sm text-red-600 bg-red-50 p-2 rounded-lg">
-                                    <i class="fas fa-exclamation-circle"></i>
-                                    {% for error in form.subcounty.errors %}
-                                        <span>{{ error }}</span>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    <!-- Right Column -->
-                    <div class="space-y-6">
-                        <!-- Village Field -->
-                        <div class="group">
-                            <label for="{{ form.village.id_for_label }}" class="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-home text-green-600 text-xs"></i>
-                                Village
-                            </label>
-                            {{ form.village }}
-                            {% if form.village.errors %}
-                                <div class="mt-2 flex items-center gap-2 text-sm text-red-600 bg-red-50 p-2 rounded-lg">
-                                    <i class="fas fa-exclamation-circle"></i>
-                                    {% for error in form.village.errors %}
-                                        <span>{{ error }}</span>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                        </div>
-
-                        <!-- Acreage Field -->
-                        <div class="group">
-                            <label for="{{ form.acreage.id_for_label }}" class="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-ruler-combined text-green-600 text-xs"></i>
-                                Acreage
-                                <span class="text-red-500 text-xs ml-1">*</span>
-                            </label>
-                            <div class="relative">
-                                {{ form.acreage }}
-                                <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs text-gray-400">acres</span>
-                            </div>
-                            {% if form.acreage.errors %}
-                                <div class="mt-2 flex items-center gap-2 text-sm text-red-600 bg-red-50 p-2 rounded-lg">
-                                    <i class="fas fa-exclamation-circle"></i>
-                                    {% for error in form.acreage.errors %}
-                                        <span>{{ error }}</span>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                        </div>
-
-                        <!-- Main Crop Field -->
-                        <div class="group">
-                            <label for="{{ form.main_crop.id_for_label }}" class="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
-                                <i class="fas fa-seedling text-green-600 text-xs"></i>
-                                Main Crop
-                            </label>
-                            {{ form.main_crop }}
-                            {% if form.main_crop.errors %}
-                                <div class="mt-2 flex items-center gap-2 text-sm text-red-600 bg-red-50 p-2 rounded-lg">
-                                    <i class="fas fa-exclamation-circle"></i>
-                                    {% for error in form.main_crop.errors %}
-                                        <span>{{ error }}</span>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Full Width Row for Additional Notes if needed -->
-                <div class="mt-6">
-                    <div class="border-t border-gray-100 my-4"></div>
-                    
-                    <!-- Summary Note with Grid Layout -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="bg-green-50 rounded-xl p-4 border border-green-100">
-                            <div class="flex items-start gap-3">
-                                <i class="fas fa-chart-line text-green-600 mt-0.5"></i>
-                                <div class="text-sm">
-                                    <p class="font-medium text-green-800">What happens next?</p>
-                                    <p class="text-green-700 mt-0.5">After saving, you can add harvests, record expenses, track sales, and monitor profitability for this farm.</p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="bg-blue-50 rounded-xl p-4 border border-blue-100">
-                            <div class="flex items-start gap-3">
-                                <i class="fas fa-shield-alt text-blue-600 mt-0.5"></i>
-                                <div class="text-sm">
-                                    <p class="font-medium text-blue-800">Data Protection</p>
-                                    <p class="text-blue-700 mt-0.5">Your farm data is private and only accessible to you. We never share your information.</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Form Actions -->
-            <div class="border-t border-gray-100 px-6 md:px-8 py-5 bg-gray-50 flex flex-col sm:flex-row gap-3 justify-between items-center">
-                <a href="{% url 'farms:farm_list' %}" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 border border-gray-300 rounded-xl text-gray-700 text-sm font-medium hover:bg-gray-100 transition-all duration-200">
-                    <i class="fas fa-arrow-left text-xs"></i>
-                    Back to Farms
-                </a>
-                
-                <div class="flex gap-3 w-full sm:w-auto">
-                    <button type="reset" class="flex-1 sm:flex-none px-5 py-2.5 border border-gray-300 rounded-xl text-gray-700 text-sm font-medium hover:bg-gray-50 transition-all duration-200">
-                        Reset
-                    </button>
-                    <button type="submit" class="flex-1 sm:flex-none px-6 py-2.5 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white text-sm font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-200 transform hover:scale-[1.02]">
-                        <i class="fas fa-save mr-2"></i>
-                        Save Farm
-                    </button>
-                </div>
-            </div>
-        </form>
-    </div>
-    
-    <!-- Quick Tips Section with Grid -->
-    <div class="mt-6">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <!-- Tip 1 -->
-            <div class="bg-white rounded-xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition-shadow">
-                <div class="flex items-center gap-3 mb-2">
-                    <div class="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
-                        <i class="fas fa-info-circle text-blue-600 text-sm"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-sm font-semibold text-gray-800">Tip 1: Unique Name</h3>
-                        <p class="text-xs text-gray-600 mt-1">Use a unique farm name to easily identify it in reports and analytics.</p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Tip 2 -->
-            <div class="bg-white rounded-xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition-shadow">
-                <div class="flex items-center gap-3 mb-2">
-                    <div class="w-8 h-8 rounded-lg bg-purple-50 flex items-center justify-center">
-                        <i class="fas fa-map-marked-alt text-purple-600 text-sm"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-sm font-semibold text-gray-800">Tip 2: Accurate Location</h3>
-                        <p class="text-xs text-gray-600 mt-1">Accurate location details help with regional market price comparisons.</p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Tip 3 -->
-            <div class="bg-white rounded-xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition-shadow">
-                <div class="flex items-center gap-3 mb-2">
-                    <div class="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center">
-                        <i class="fas fa-chart-simple text-green-600 text-sm"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-sm font-semibold text-gray-800">Tip 3: Main Crop</h3>
-                        <p class="text-xs text-gray-600 mt-1">Adding the main crop now will help with harvest and sale categorization later.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+<div class="max-w-4xl mx-auto">
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold text-gray-900">{{ title }}</h1>
+    <p class="text-sm text-gray-500 mt-1">Link every record to a farm project so reports show real project profitability.</p>
+  </div>
+  <div class="bg-white rounded-2xl border border-gray-200 shadow-lg overflow-hidden">
+    <div class="h-1 bg-gradient-to-r from-green-500 to-green-600"></div>
+    <form method="post" class="p-6 md:p-8 space-y-6">
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="bg-red-50 border border-red-200 text-red-700 rounded-xl p-3 text-sm">{{ form.non_field_errors }}</div>
+      {% endif %}
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {% for field in form %}
+          <div class="{% if field.field.widget.input_type == 'textarea' %}md:col-span-2{% endif %}">
+            <label for="{{ field.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+              {{ field.label }}{% if field.field.required %}<span class="text-red-500"> *</span>{% endif %}
+            </label>
+            {{ field }}
+            {% if field.help_text %}<p class="mt-1 text-xs text-gray-500">{{ field.help_text }}</p>{% endif %}
+            {% for error in field.errors %}<p class="mt-1 text-sm text-red-600">{{ error }}</p>{% endfor %}
+          </div>
+        {% endfor %}
+      </div>
+      <div class="flex items-center justify-between pt-4 border-t border-gray-100">
+        <a href="{% url 'farms:farm_list' %}" class="text-sm text-gray-600 hover:text-gray-900">Cancel</a>
+        <button type="submit" class="px-5 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl font-semibold">{{ submit_label }}</button>
+      </div>
+    </form>
+  </div>
 </div>
-
-<style>
-    /* Enhanced form styling */
-    input, select, textarea {
-        width: 100%;
-        padding: 0.625rem 0.875rem;
-        border: 1.5px solid #e5e7eb;
-        border-radius: 0.75rem;
-        font-size: 0.875rem;
-        transition: all 0.2s ease;
-        background-color: #ffffff;
-    }
-    
-    input:hover, select:hover, textarea:hover {
-        border-color: #9ca3af;
-    }
-    
-    input:focus, select:focus, textarea:focus {
-        outline: none;
-        border-color: #059669;
-        box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
-    }
-    
-    /* Input with unit indicator */
-    input[type="number"] {
-        padding-right: 3rem;
-    }
-    
-    /* Smooth transitions */
-    button {
-        transition: all 0.2s ease;
-    }
-    
-    /* Grid animations */
-    .grid > div {
-        transition: all 0.2s ease;
-    }
-    
-    /* Responsive adjustments */
-    @media (max-width: 640px) {
-        .rounded-2xl {
-            border-radius: 1rem;
-        }
-    }
-</style>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Add focus effect to form fields
-    const inputs = document.querySelectorAll('input, select, textarea');
-    inputs.forEach(input => {
-        input.addEventListener('focus', function() {
-            this.closest('.group')?.classList.add('transform');
-        });
-        input.addEventListener('blur', function() {
-            this.closest('.group')?.classList.remove('transform');
-        });
-    });
-    
-    // Reset button confirmation
-    const resetBtn = document.querySelector('button[type="reset"]');
-    if (resetBtn) {
-        resetBtn.addEventListener('click', function(e) {
-            if (!confirm('Are you sure you want to reset all form fields?')) {
-                e.preventDefault();
-            }
-        });
-    }
-    
-    // Auto-format acreage field
-    const acreageInput = document.querySelector('input[name="acreage"]');
-    if (acreageInput) {
-        acreageInput.addEventListener('blur', function() {
-            let value = parseFloat(this.value);
-            if (!isNaN(value)) {
-                this.value = value.toFixed(2);
-            }
-        });
-    }
-});
-</script>
 {% endblock %}

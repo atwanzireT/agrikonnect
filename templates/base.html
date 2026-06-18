@@ -104,6 +104,56 @@
             background: #15803d;
         }
 
+
+
+        :root {
+            --agro-primary: #16a34a;
+            --agro-primary-dark: #0f5132;
+            --agro-primary-deep: #08381f;
+            --agro-primary-soft: #dcfce7;
+            --agro-primary-pale: #f0fdf4;
+            --agro-primary-border: #bbf7d0;
+        }
+
+        .agro-bg-primary { background: var(--agro-primary) !important; }
+        .agro-bg-dark { background: var(--agro-primary-dark) !important; }
+        .agro-text-primary { color: var(--agro-primary) !important; }
+        .agro-text-dark { color: var(--agro-primary-dark) !important; }
+        .agro-border-primary { border-color: var(--agro-primary-border) !important; }
+
+        /* Keep AgroSync greens uniform even when older templates use mixed lime/emerald utilities. */
+        .bg-lime-50, .bg-emerald-50, .bg-green-50 { background-color: var(--agro-primary-pale) !important; }
+        .bg-lime-100, .bg-emerald-100, .bg-green-100 { background-color: var(--agro-primary-soft) !important; }
+        .bg-lime-200, .bg-emerald-200, .bg-green-200 { background-color: #bbf7d0 !important; }
+        .bg-lime-300, .bg-emerald-300, .bg-green-300 { background-color: var(--agro-primary) !important; color: #ffffff !important; }
+        .bg-lime-400, .bg-emerald-400, .bg-green-400,
+        .bg-lime-500, .bg-emerald-500, .bg-green-500,
+        .bg-lime-600, .bg-emerald-600, .bg-green-600,
+        .bg-lime-700, .bg-emerald-700, .bg-green-700 { background-color: var(--agro-primary) !important; }
+        .bg-lime-800, .bg-emerald-800, .bg-green-800,
+        .bg-lime-900, .bg-emerald-900, .bg-green-900,
+        .bg-green-950 { background-color: var(--agro-primary-dark) !important; }
+
+        .text-lime-50, .text-emerald-50, .text-green-50,
+        .text-lime-100, .text-emerald-100, .text-green-100 { color: var(--agro-primary-soft) !important; }
+        .text-lime-200, .text-emerald-200, .text-green-200,
+        .text-lime-300, .text-emerald-300, .text-green-300,
+        .text-lime-400, .text-emerald-400, .text-green-400,
+        .text-lime-500, .text-emerald-500, .text-green-500,
+        .text-lime-600, .text-emerald-600, .text-green-600,
+        .text-lime-700, .text-emerald-700, .text-green-700,
+        .text-lime-800, .text-emerald-800, .text-green-800,
+        .text-lime-900, .text-emerald-900, .text-green-900,
+        .text-green-950 { color: var(--agro-primary-dark) !important; }
+
+        .border-lime-100, .border-emerald-100, .border-green-100,
+        .border-lime-200, .border-emerald-200, .border-green-200,
+        .border-lime-300, .border-emerald-300, .border-green-300 { border-color: var(--agro-primary-border) !important; }
+
+        .focus\:ring-lime-100:focus, .focus\:ring-emerald-100:focus, .focus\:ring-green-100:focus { --tw-ring-color: var(--agro-primary-border) !important; }
+        .hover\:bg-lime-200:hover, .hover\:bg-emerald-200:hover, .hover\:bg-green-200:hover,
+        .hover\:bg-lime-400:hover, .hover\:bg-emerald-400:hover, .hover\:bg-green-400:hover { background-color: #15803d !important; color: #ffffff !important; }
+
         input,
         select,
         textarea {
