@@ -13,7 +13,7 @@ from rest_framework.authtoken.models import Token
 
 from farms.models import (
     Farm, FarmActivity, HarvestRecord, FarmExpense, SalesRecord,
-    FarmProject, ProjectPlannedActivity, ProjectInputRecord, ProjectRevenueRecord,
+    FarmProject, ProductionBatch, ProjectPlannedActivity, ProjectInputRecord, ProjectRevenueRecord,
 )
 from marketplace.models import ProduceListing, BuyerRequest, ListingInquiry, MarketplacePurchase, ListingStatusChoices, RequestStatusChoices
 
@@ -27,6 +27,7 @@ from .serializers import (
     FarmExpenseSerializer,
     SalesRecordSerializer,
     FarmProjectSerializer,
+    ProductionBatchSerializer,
     ProjectPlannedActivitySerializer,
     ProjectInputRecordSerializer,
     ProjectRevenueRecordSerializer,
@@ -103,6 +104,7 @@ class FarmerDashboardAPIView(APIView):
         profit = total_sales - total_expenses - total_activity_cost
 
         projects = FarmProject.objects.filter(farmer=user, is_deleted=False)
+        batches = ProductionBatch.objects.filter(farmer=user, is_deleted=False)
         project_inputs = ProjectInputRecord.objects.filter(farmer=user, is_deleted=False)
         project_revenues = ProjectRevenueRecord.objects.filter(farmer=user, is_deleted=False)
         planned_activities = ProjectPlannedActivity.objects.filter(farmer=user, is_deleted=False)
@@ -123,6 +125,8 @@ class FarmerDashboardAPIView(APIView):
             "total_sales": total_sales,
             "estimated_profit": profit,
             "projects_count": projects.count(),
+            "batches_count": batches.count(),
+            "active_batches_count": batches.filter(status="active").count(),
             "active_projects_count": projects.filter(status="active").count(),
             "planned_project_profit": project_expected_revenue - project_expected_cost,
             "project_actual_cost": project_actual_cost,
@@ -234,6 +238,31 @@ class FarmProjectViewSet(FarmerOwnedViewSet):
             },
             "revenue_records_count": revenues.count(),
             "input_records_count": inputs.count(),
+        })
+
+
+class ProductionBatchViewSet(FarmerOwnedViewSet):
+    model = ProductionBatch
+    serializer_class = ProductionBatchSerializer
+
+    @action(detail=True, methods=["get"], url_path="profit-summary")
+    def profit_summary(self, request, id=None):
+        batch = self.get_object()
+        return Response({
+            "batch_id": batch.id,
+            "batch_code": batch.batch_code,
+            "batch_name": batch.display_name,
+            "project_id": batch.project_id,
+            "project_name": batch.project.name,
+            "status": batch.status,
+            "expected_revenue": batch.expected_revenue,
+            "expected_cost": batch.expected_cost,
+            "actual_expenses": batch.actual_expenses,
+            "actual_revenue": batch.actual_revenue,
+            "profit": batch.profit,
+            "harvested_quantity": batch.harvested_quantity,
+            "sold_quantity": batch.sold_quantity,
+            "stock_balance": batch.stock_balance,
         })
 
 

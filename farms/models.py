@@ -131,6 +131,7 @@ class Farm(OfflineSyncMixin, BaseModel):
 class HarvestRecord(OfflineSyncMixin, BaseModel):
     farm = models.ForeignKey(Farm, on_delete=models.CASCADE, related_name="harvest_records")
     project = models.ForeignKey("FarmProject", on_delete=models.SET_NULL, blank=True, null=True, related_name="harvest_records")
+    batch = models.ForeignKey("ProductionBatch", on_delete=models.SET_NULL, blank=True, null=True, related_name="harvest_records")
     farmer = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -154,10 +155,15 @@ class HarvestRecord(OfflineSyncMixin, BaseModel):
             raise ValidationError("The selected project does not belong to the selected farmer.")
         if self.project_id and self.farm_id and self.project.farm_id != self.farm_id:
             raise ValidationError("The selected farm must match the selected project.")
+        if self.batch_id and self.project_id and self.batch.project_id != self.project_id:
+            raise ValidationError("The selected batch must belong to the selected project.")
         if self.farm_id and self.farmer_id and self.farm.farmer_id != self.farmer_id:
             raise ValidationError("The selected farm does not belong to the selected farmer.")
 
     def save(self, *args, **kwargs):
+        if self.batch_id:
+            self.project = self.batch.project or self.project
+            self.farm = self.batch.farm or self.farm
         if self.project_id and not self.farm_id:
             self.farm = self.project.farm
         self.crop_name = (self.crop_name or "").strip()
@@ -175,6 +181,7 @@ class HarvestRecord(OfflineSyncMixin, BaseModel):
 class FarmExpense(OfflineSyncMixin, BaseModel):
     farm = models.ForeignKey(Farm, on_delete=models.CASCADE, related_name="expenses")
     project = models.ForeignKey("FarmProject", on_delete=models.SET_NULL, blank=True, null=True, related_name="expenses")
+    batch = models.ForeignKey("ProductionBatch", on_delete=models.SET_NULL, blank=True, null=True, related_name="expenses")
     farmer = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -195,10 +202,15 @@ class FarmExpense(OfflineSyncMixin, BaseModel):
             raise ValidationError("The selected project does not belong to the selected farmer.")
         if self.project_id and self.farm_id and self.project.farm_id != self.farm_id:
             raise ValidationError("The selected farm must match the selected project.")
+        if self.batch_id and self.project_id and self.batch.project_id != self.project_id:
+            raise ValidationError("The selected batch must belong to the selected project.")
         if self.farm_id and self.farmer_id and self.farm.farmer_id != self.farmer_id:
             raise ValidationError("The selected farm does not belong to the selected farmer.")
 
     def save(self, *args, **kwargs):
+        if self.batch_id:
+            self.project = self.batch.project or self.project
+            self.farm = self.batch.farm or self.farm
         if self.project_id and not self.farm_id:
             self.farm = self.project.farm
         self.category = (self.category or "").strip()
@@ -222,6 +234,7 @@ class SalesRecord(OfflineSyncMixin, BaseModel):
         related_name="sales_records"
     )
     project = models.ForeignKey("FarmProject", on_delete=models.SET_NULL, blank=True, null=True, related_name="sales_records")
+    batch = models.ForeignKey("ProductionBatch", on_delete=models.SET_NULL, blank=True, null=True, related_name="sales_records")
     harvest = models.ForeignKey(HarvestRecord, on_delete=models.SET_NULL, blank=True, null=True, related_name="sales_records")
     farmer = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -250,6 +263,8 @@ class SalesRecord(OfflineSyncMixin, BaseModel):
             raise ValidationError("The selected project does not belong to the selected farmer.")
         if self.project_id and self.farm_id and self.project.farm_id != self.farm_id:
             raise ValidationError("The selected farm must match the selected project.")
+        if self.batch_id and self.project_id and self.batch.project_id != self.project_id:
+            raise ValidationError("The selected batch must belong to the selected project.")
         if self.harvest_id and self.project_id and self.harvest.project_id and self.harvest.project_id != self.project_id:
             raise ValidationError("The sale harvest must belong to the selected project.")
         if self.farm_id and self.farmer_id and self.farm.farmer_id != self.farmer_id:
@@ -261,6 +276,9 @@ class SalesRecord(OfflineSyncMixin, BaseModel):
             self.farm = self.harvest.farm or self.farm
             self.crop_name = self.crop_name or self.harvest.crop_name
             self.unit = self.unit or self.harvest.unit
+        if self.batch_id:
+            self.project = self.batch.project or self.project
+            self.farm = self.batch.farm or self.farm
         if self.project_id and not self.farm_id:
             self.farm = self.project.farm
         self.crop_name = (self.crop_name or "").strip()
@@ -278,6 +296,7 @@ class SalesRecord(OfflineSyncMixin, BaseModel):
 class FarmActivity(OfflineSyncMixin, BaseModel):
     farm = models.ForeignKey(Farm, on_delete=models.CASCADE, related_name="activities")
     project = models.ForeignKey("FarmProject", on_delete=models.SET_NULL, blank=True, null=True, related_name="activities")
+    batch = models.ForeignKey("ProductionBatch", on_delete=models.SET_NULL, blank=True, null=True, related_name="activities")
     farmer = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -311,10 +330,15 @@ class FarmActivity(OfflineSyncMixin, BaseModel):
             raise ValidationError("The selected project does not belong to the selected farmer.")
         if self.project_id and self.farm_id and self.project.farm_id != self.farm_id:
             raise ValidationError("The selected farm must match the selected project.")
+        if self.batch_id and self.project_id and self.batch.project_id != self.project_id:
+            raise ValidationError("The selected batch must belong to the selected project.")
         if self.farm_id and self.farmer_id and self.farm.farmer_id != self.farmer_id:
             raise ValidationError("The selected farm does not belong to the selected farmer.")
 
     def save(self, *args, **kwargs):
+        if self.batch_id:
+            self.project = self.batch.project or self.project
+            self.farm = self.batch.farm or self.farm
         if self.project_id and not self.farm_id:
             self.farm = self.project.farm
         self.title = (self.title or "").strip()
@@ -368,6 +392,15 @@ class ProjectInputCategoryChoices(models.TextChoices):
     TRANSPORT = "transport", "Transport"
     EQUIPMENT = "equipment", "Equipment"
     OTHER = "other", "Other"
+
+
+class ProductionBatchStatusChoices(models.TextChoices):
+    PLANNED = "planned", "Planned"
+    ACTIVE = "active", "Active"
+    HARVESTED = "harvested", "Harvested"
+    SOLD_OUT = "sold_out", "Sold out"
+    CLOSED = "closed", "Closed"
+    CANCELLED = "cancelled", "Cancelled"
 
 
 class FarmProject(OfflineSyncMixin, BaseModel):
@@ -454,6 +487,100 @@ class FarmProject(OfflineSyncMixin, BaseModel):
 
     def __str__(self):
         return self.name
+
+
+class ProductionBatch(OfflineSyncMixin, BaseModel):
+    project = models.ForeignKey(FarmProject, on_delete=models.CASCADE, related_name="batches")
+    farm = models.ForeignKey(Farm, on_delete=models.CASCADE, related_name="production_batches")
+    farmer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="production_batches"
+    )
+    batch_code = models.CharField(max_length=80, db_index=True)
+    name = models.CharField(max_length=160, blank=True, null=True)
+    season = models.CharField(max_length=100, blank=True, null=True)
+    start_date = models.DateField()
+    expected_end_date = models.DateField(blank=True, null=True)
+    actual_end_date = models.DateField(blank=True, null=True)
+    status = models.CharField(
+        max_length=20,
+        choices=ProductionBatchStatusChoices.choices,
+        default=ProductionBatchStatusChoices.PLANNED,
+        db_index=True,
+    )
+    area_or_units = models.DecimalField(max_digits=12, decimal_places=2, blank=True, null=True, help_text="Acres, birds, animals, ponds, beds, or other production units.")
+    unit_label = models.CharField(max_length=30, default="acre")
+    expected_quantity = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    expected_unit = models.CharField(max_length=20, default="kg")
+    expected_revenue = models.DecimalField(max_digits=14, decimal_places=2, default=0)
+    expected_cost = models.DecimalField(max_digits=14, decimal_places=2, default=0)
+    notes = models.TextField(blank=True, null=True)
+
+    class Meta:
+        ordering = ["-start_date", "-created_at"]
+        constraints = [
+            models.UniqueConstraint(fields=["project", "batch_code"], name="unique_batch_code_per_project")
+        ]
+        indexes = [
+            models.Index(fields=["farmer", "status"]),
+            models.Index(fields=["project", "start_date"]),
+        ]
+
+    @property
+    def display_name(self):
+        return self.name or self.batch_code
+
+    @property
+    def actual_expenses(self):
+        expense_total = self.expenses.filter(is_deleted=False).aggregate(total=models.Sum("amount"))["total"] or 0
+        activity_totals = self.activities.filter(is_deleted=False).aggregate(labour=models.Sum("labour_cost"), inputs=models.Sum("input_cost"))
+        return expense_total + (activity_totals["labour"] or 0) + (activity_totals["inputs"] or 0)
+
+    @property
+    def actual_revenue(self):
+        return self.sales_records.filter(is_deleted=False).aggregate(total=models.Sum("total_amount"))["total"] or 0
+
+    @property
+    def profit(self):
+        return (self.actual_revenue or 0) - (self.actual_expenses or 0)
+
+    @property
+    def harvested_quantity(self):
+        return self.harvest_records.filter(is_deleted=False).aggregate(total=models.Sum("actual_yield"))["total"] or 0
+
+    @property
+    def sold_quantity(self):
+        return self.sales_records.filter(is_deleted=False).aggregate(total=models.Sum("quantity"))["total"] or 0
+
+    @property
+    def stock_balance(self):
+        return (self.harvested_quantity or 0) - (self.sold_quantity or 0)
+
+    def clean(self):
+        if self.project_id and self.farmer_id and self.project.farmer_id != self.farmer_id:
+            raise ValidationError("The selected project does not belong to the selected farmer.")
+        if self.farm_id and self.project_id and self.farm_id != self.project.farm_id:
+            raise ValidationError("The selected farm must match the project farm.")
+        if self.expected_end_date and self.start_date and self.expected_end_date < self.start_date:
+            raise ValidationError({"expected_end_date": "Expected end date cannot be before the start date."})
+        if self.actual_end_date and self.start_date and self.actual_end_date < self.start_date:
+            raise ValidationError({"actual_end_date": "Actual end date cannot be before the start date."})
+
+    def save(self, *args, **kwargs):
+        if self.project_id and not self.farm_id:
+            self.farm = self.project.farm
+        self.batch_code = (self.batch_code or "").strip().upper()
+        self.name = (self.name or "").strip() or None
+        self.season = (self.season or "").strip() or None
+        self.unit_label = (self.unit_label or "unit").strip() or "unit"
+        self.expected_unit = (self.expected_unit or "kg").strip() or "kg"
+        self.notes = (self.notes or "").strip() or None
+        self.full_clean()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.project.name} / {self.display_name}"
 
 
 class ProjectPlannedActivity(OfflineSyncMixin, BaseModel):

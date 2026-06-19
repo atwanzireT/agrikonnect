@@ -25,7 +25,7 @@
 
   <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
     <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-      <div><h2 class="text-xl font-bold text-gray-900">Projects</h2><p class="text-sm text-gray-500">Activities, harvests, expenses, and sales are linked to these projects.</p></div>
+      <div><h2 class="text-xl font-bold text-gray-900">Projects</h2><p class="text-sm text-gray-500">Projects are long-term enterprises. Batches hold seasonal records, expenses, harvests, and sales.</p></div>
       <a href="{% url 'farms:farm_project_create' farm.pk %}" class="text-sm font-semibold text-green-700 hover:text-green-900">+ Add project</a>
     </div>
     {% if projects %}
@@ -44,8 +44,8 @@
               <p>Target: {{ project.target_quantity|default:"0" }} {{ project.target_unit }}</p>
             </div>
             <div class="mt-4 pt-4 border-t border-gray-100 flex justify-between text-sm">
-              <a href="{% url 'farms:project_update' project.pk %}" class="font-semibold text-green-700 hover:text-green-900">Edit</a>
-              <span class="text-gray-500">Started {{ project.start_date|date:"M d, Y" }}</span>
+              <a href="{% url 'farms:project_batch_create' project.pk %}" class="font-semibold text-green-700 hover:text-green-900">+ Batch</a>
+              <a href="{% url 'farms:project_update' project.pk %}" class="font-semibold text-gray-700 hover:text-gray-900">Edit</a>
             </div>
           </div>
         {% endfor %}

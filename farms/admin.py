@@ -2,7 +2,7 @@ from django.contrib import admin
 
 from .models import (
     Farm, HarvestRecord, FarmExpense, SalesRecord, FarmActivity,
-    FarmProject, ProjectPlannedActivity, ProjectInputRecord, ProjectRevenueRecord,
+    FarmProject, ProductionBatch, ProjectPlannedActivity, ProjectInputRecord, ProjectRevenueRecord,
 )
 
 
@@ -56,7 +56,7 @@ class HarvestRecordAdmin(admin.ModelAdmin):
         "farmer__full_name",
         "farmer__phone",
     )
-    autocomplete_fields = ("farm", "project", "farmer")
+    autocomplete_fields = ("farm", "project", "batch", "farmer")
     readonly_fields = ("id", "created_at", "updated_at")
     ordering = ("-harvest_date", "-created_at")
 
@@ -81,7 +81,7 @@ class FarmExpenseAdmin(admin.ModelAdmin):
         "farmer__full_name",
         "receipt_number",
     )
-    autocomplete_fields = ("farm", "project", "farmer")
+    autocomplete_fields = ("farm", "project", "batch", "farmer")
     readonly_fields = ("id", "created_at", "updated_at")
     ordering = ("-expense_date", "-created_at")
 
@@ -109,7 +109,7 @@ class SalesRecordAdmin(admin.ModelAdmin):
         "farmer__full_name",
         "farmer__phone",
     )
-    autocomplete_fields = ("farm", "project", "farmer")
+    autocomplete_fields = ("farm", "project", "batch", "farmer")
     readonly_fields = ("id", "total_amount", "created_at", "updated_at")
     ordering = ("-sale_date", "-created_at")
 
@@ -118,7 +118,7 @@ class FarmActivityAdmin(admin.ModelAdmin):
     list_display = ("title", "activity_type", "project", "farm", "farmer", "activity_date", "labour_cost", "input_cost", "created_at")
     list_filter = ("activity_type", "activity_date", "created_at")
     search_fields = ("title", "crop_name", "notes", "farm__farm_name", "farmer__full_name", "farmer__phone")
-    autocomplete_fields = ("farm", "project", "farmer")
+    autocomplete_fields = ("farm", "project", "batch", "farmer")
     readonly_fields = ("id", "total_cost", "created_at", "updated_at")
     ordering = ("-activity_date", "-created_at")
 
@@ -130,6 +130,16 @@ class FarmProjectAdmin(admin.ModelAdmin):
     search_fields = ("name", "description", "farm__farm_name", "farmer__full_name", "farmer__phone")
     autocomplete_fields = ("farm", "farmer")
     readonly_fields = ("id", "planned_profit", "actual_cost", "actual_revenue", "estimated_profit", "projected_profit", "cost_variance", "created_at", "updated_at")
+    ordering = ("-start_date", "-created_at")
+
+
+@admin.register(ProductionBatch)
+class ProductionBatchAdmin(admin.ModelAdmin):
+    list_display = ("batch_code", "display_name", "project", "farm", "farmer", "season", "status", "start_date", "expected_end_date", "actual_expenses", "actual_revenue", "profit")
+    list_filter = ("status", "season", "start_date", "created_at")
+    search_fields = ("batch_code", "name", "season", "project__name", "farm__farm_name", "farmer__full_name")
+    autocomplete_fields = ("project", "farm", "farmer")
+    readonly_fields = ("id", "actual_expenses", "actual_revenue", "profit", "harvested_quantity", "sold_quantity", "stock_balance", "created_at", "updated_at")
     ordering = ("-start_date", "-created_at")
 
 

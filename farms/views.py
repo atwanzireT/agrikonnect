@@ -7,8 +7,8 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
-from .forms import FarmForm, FarmProjectForm, HarvestRecordForm, FarmExpenseForm, SalesRecordForm
-from .models import Farm, FarmProject, HarvestRecord, FarmExpense, SalesRecord, FarmActivity
+from .forms import FarmForm, FarmProjectForm, ProductionBatchForm, HarvestRecordForm, FarmExpenseForm, SalesRecordForm
+from .models import Farm, FarmProject, ProductionBatch, HarvestRecord, FarmExpense, SalesRecord, FarmActivity
 
 
 def is_ajax(request):
@@ -38,9 +38,9 @@ def json_success_response(message, extra_data=None, status=200):
 @login_required
 def farmer_dashboard(request):
     farms = Farm.objects.filter(farmer=request.user).order_by("-created_at")
-    harvests = HarvestRecord.objects.filter(farmer=request.user).select_related("farm", "project")
-    expenses = FarmExpense.objects.filter(farmer=request.user).select_related("farm", "project")
-    sales = SalesRecord.objects.filter(farmer=request.user).select_related("farm", "project", "harvest")
+    harvests = HarvestRecord.objects.filter(farmer=request.user).select_related("farm", "project", "batch")
+    expenses = FarmExpense.objects.filter(farmer=request.user).select_related("farm", "project", "batch")
+    sales = SalesRecord.objects.filter(farmer=request.user).select_related("farm", "project", "batch", "harvest")
 
     total_farms = farms.count()
     total_harvests = harvests.count()
@@ -125,6 +125,7 @@ def farm_detail(request, pk):
     farm = get_object_or_404(Farm, pk=pk, farmer=request.user)
 
     projects = farm.projects.filter(is_deleted=False).order_by("name")
+    batches = farm.production_batches.filter(is_deleted=False).select_related("project").order_by("-start_date", "-created_at")
     harvests = farm.harvest_records.select_related("project").all().order_by("-harvest_date", "-created_at")
     expenses = farm.expenses.select_related("project").all().order_by("-expense_date", "-created_at")
     sales = farm.sales_records.select_related("project", "harvest").all().order_by("-sale_date", "-created_at")
@@ -138,6 +139,7 @@ def farm_detail(request, pk):
     context = {
         "farm": farm,
         "projects": projects,
+        "batches": batches,
         "harvests": harvests,
         "expenses": expenses,
         "sales": sales,
@@ -237,7 +239,7 @@ def farm_update(request, pk):
 
 @login_required
 def project_list(request):
-    projects = FarmProject.objects.filter(farmer=request.user, is_deleted=False).select_related("farm").order_by("farm__farm_name", "name")
+    projects = FarmProject.objects.filter(farmer=request.user, is_deleted=False).select_related("farm").prefetch_related("batches").order_by("farm__farm_name", "name")
     return render(request, "farms/project_list.html", {"projects": projects})
 
 
@@ -321,8 +323,66 @@ def project_update(request, pk):
 
 
 @login_required
+def batch_list(request):
+    batches = ProductionBatch.objects.filter(farmer=request.user, is_deleted=False).select_related("farm", "project").order_by("-start_date", "-created_at")
+    return render(request, "farms/batch_list.html", {"batches": batches})
+
+
+@login_required
+def batch_detail(request, pk):
+    batch = get_object_or_404(ProductionBatch, pk=pk, farmer=request.user, is_deleted=False)
+    context = {
+        "batch": batch,
+        "activities": batch.activities.filter(is_deleted=False).order_by("-activity_date", "-created_at"),
+        "expenses": batch.expenses.filter(is_deleted=False).order_by("-expense_date", "-created_at"),
+        "harvests": batch.harvest_records.filter(is_deleted=False).order_by("-harvest_date", "-created_at"),
+        "sales": batch.sales_records.filter(is_deleted=False).order_by("-sale_date", "-created_at"),
+    }
+    return render(request, "farms/batch_detail.html", context)
+
+
+@login_required
+def batch_create(request, project_pk=None):
+    project = None
+    if project_pk:
+        project = get_object_or_404(FarmProject, pk=project_pk, farmer=request.user, is_deleted=False)
+    form = ProductionBatchForm(request.POST or None, farmer=request.user, project=project)
+    if request.method == "POST":
+        if form.is_valid():
+            try:
+                batch = form.save(commit=False)
+                batch.farmer = request.user
+                if project:
+                    batch.project = project
+                    batch.farm = project.farm
+                batch.save()
+                messages.success(request, "Production batch created successfully.")
+                return redirect("farms:batch_detail", pk=batch.pk)
+            except (ValidationError, IntegrityError) as e:
+                form.add_error(None, e)
+    return render(request, "farms/batch_form.html", {"form": form, "project": project, "title": "Add Production Batch", "submit_label": "Save Batch"})
+
+
+@login_required
+def batch_update(request, pk):
+    batch = get_object_or_404(ProductionBatch, pk=pk, farmer=request.user, is_deleted=False)
+    form = ProductionBatchForm(request.POST or None, instance=batch, farmer=request.user)
+    if request.method == "POST":
+        if form.is_valid():
+            try:
+                updated_batch = form.save(commit=False)
+                updated_batch.farmer = request.user
+                updated_batch.save()
+                messages.success(request, "Production batch updated successfully.")
+                return redirect("farms:batch_detail", pk=updated_batch.pk)
+            except (ValidationError, IntegrityError) as e:
+                form.add_error(None, e)
+    return render(request, "farms/batch_form.html", {"form": form, "batch": batch, "project": batch.project, "title": "Edit Production Batch", "submit_label": "Update Batch"})
+
+
+@login_required
 def harvest_list(request):
-    records = HarvestRecord.objects.filter(farmer=request.user).select_related("farm", "project").order_by(
+    records = HarvestRecord.objects.filter(farmer=request.user).select_related("farm", "project", "batch").order_by(
         "-harvest_date", "-created_at"
     )
     return render(request, "farms/harvest_list.html", {"records": records})
@@ -410,7 +470,7 @@ def harvest_update(request, pk):
 
 @login_required
 def expense_list(request):
-    expenses = FarmExpense.objects.filter(farmer=request.user).select_related("farm", "project").order_by(
+    expenses = FarmExpense.objects.filter(farmer=request.user).select_related("farm", "project", "batch").order_by(
         "-expense_date", "-created_at"
     )
     
@@ -506,7 +566,7 @@ def expense_update(request, pk):
 
 @login_required
 def sale_list(request):
-    sales = SalesRecord.objects.filter(farmer=request.user).select_related("farm", "project", "harvest").order_by(
+    sales = SalesRecord.objects.filter(farmer=request.user).select_related("farm", "project", "batch", "harvest").order_by(
         "-sale_date", "-created_at"
     )
     

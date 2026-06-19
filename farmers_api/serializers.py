@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate, get_user_model
 
 from farms.models import (
     Farm, FarmActivity, HarvestRecord, FarmExpense, SalesRecord,
-    FarmProject, ProjectPlannedActivity, ProjectInputRecord, ProjectRevenueRecord,
+    FarmProject, ProductionBatch, ProjectPlannedActivity, ProjectInputRecord, ProjectRevenueRecord,
 )
 from marketplace.models import ProduceListing, BuyerRequest, ListingInquiry, MarketplacePurchase
 
@@ -176,6 +176,15 @@ class FarmerOwnedModelSerializer(OfflineModelSerializer):
         farm = attrs.get("farm") or getattr(self.instance, "farm", None)
         project = attrs.get("project") or getattr(self.instance, "project", None)
         harvest = attrs.get("harvest") or getattr(self.instance, "harvest", None)
+        batch = attrs.get("batch") or getattr(self.instance, "batch", None)
+
+        if batch:
+            if getattr(batch, "farmer_id", None) != user.id:
+                raise serializers.ValidationError({"batch": "This batch does not belong to your account."})
+            attrs["project"] = batch.project
+            attrs["farm"] = batch.farm
+            project = batch.project
+            farm = batch.farm
 
         if project and not farm:
             attrs["farm"] = project.farm
@@ -197,6 +206,8 @@ class FarmerOwnedModelSerializer(OfflineModelSerializer):
             raise serializers.ValidationError({"project": "This project does not belong to your account."})
         if project and farm and getattr(project, "farm_id", None) != getattr(farm, "id", None):
             raise serializers.ValidationError({"project": "The selected project must belong to the selected farm."})
+        if batch and project and getattr(batch, "project_id", None) != getattr(project, "id", None):
+            raise serializers.ValidationError({"batch": "The selected batch must belong to the selected project."})
         return attrs
 
     def create(self, validated_data):
@@ -276,6 +287,25 @@ class FarmProjectSerializer(FarmerOwnedModelSerializer):
             "created_at", "updated_at", "sync_status",
             "planned_profit", "actual_cost", "actual_revenue",
             "estimated_profit", "projected_profit", "cost_variance",
+        ]
+
+
+class ProductionBatchSerializer(FarmerOwnedModelSerializer):
+    display_name = serializers.CharField(read_only=True)
+    actual_expenses = serializers.DecimalField(max_digits=14, decimal_places=2, read_only=True)
+    actual_revenue = serializers.DecimalField(max_digits=14, decimal_places=2, read_only=True)
+    profit = serializers.DecimalField(max_digits=14, decimal_places=2, read_only=True)
+    harvested_quantity = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
+    sold_quantity = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
+    stock_balance = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
+
+    class Meta:
+        model = ProductionBatch
+        fields = "__all__"
+        read_only_fields = [
+            "created_at", "updated_at", "sync_status", "display_name",
+            "actual_expenses", "actual_revenue", "profit", "harvested_quantity",
+            "sold_quantity", "stock_balance",
         ]
 
 

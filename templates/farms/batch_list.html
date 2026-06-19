@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Production Batches | AgroSync{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-2xl bg-gradient-to-r from-green-700 to-emerald-600 p-6 text-white shadow-xl">
+    <div>
+      <h1 class="text-2xl font-bold">Production Batches</h1>
+      <p class="text-green-50 mt-1">Track every season, flock, pond, field cycle, or planting round separately.</p>
+    </div>
+    <a href="{% url 'farms:batch_create' %}" class="inline-flex items-center justify-center px-4 py-2 rounded-xl bg-white text-green-700 font-semibold hover:bg-green-50">Add Batch</a>
+  </div>
+
+  <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-100">
+        <thead class="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+          <tr><th class="px-4 py-3">Batch</th><th class="px-4 py-3">Project</th><th class="px-4 py-3">Status</th><th class="px-4 py-3">Start</th><th class="px-4 py-3 text-right">Revenue</th><th class="px-4 py-3 text-right">Cost</th><th class="px-4 py-3 text-right">Profit</th></tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100 text-sm">
+          {% for batch in batches %}
+          <tr class="hover:bg-gray-50">
+            <td class="px-4 py-3"><a class="font-semibold text-green-700" href="{% url 'farms:batch_detail' batch.pk %}">{{ batch.display_name }}</a><div class="text-xs text-gray-500">{{ batch.batch_code }}{% if batch.season %} · {{ batch.season }}{% endif %}</div></td>
+            <td class="px-4 py-3">{{ batch.project.name }}<div class="text-xs text-gray-500">{{ batch.farm.farm_name }}</div></td>
+            <td class="px-4 py-3">{{ batch.get_status_display }}</td>
+            <td class="px-4 py-3">{{ batch.start_date }}</td>
+            <td class="px-4 py-3 text-right">{{ batch.actual_revenue }}</td>
+            <td class="px-4 py-3 text-right">{{ batch.actual_expenses }}</td>
+            <td class="px-4 py-3 text-right font-semibold">{{ batch.profit }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="7" class="px-4 py-8 text-center text-gray-500">No batches yet. Create your first production batch.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

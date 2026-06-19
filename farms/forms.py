@@ -1,7 +1,7 @@
 from django import forms
 from django.utils import timezone
 
-from .models import Farm, FarmProject, HarvestRecord, FarmExpense, SalesRecord
+from .models import Farm, FarmProject, ProductionBatch, HarvestRecord, FarmExpense, SalesRecord
 from core.forms import apply_tailwind_classes
 
 
@@ -140,6 +140,63 @@ class FarmProjectForm(forms.ModelForm):
         return cleaned
 
 
+class ProductionBatchForm(forms.ModelForm):
+    class Meta:
+        model = ProductionBatch
+        fields = [
+            "project", "farm", "batch_code", "name", "season", "start_date",
+            "expected_end_date", "actual_end_date", "status", "area_or_units",
+            "unit_label", "expected_quantity", "expected_unit", "expected_revenue",
+            "expected_cost", "notes",
+        ]
+        widgets = {
+            "start_date": forms.DateInput(attrs={"type": "date"}),
+            "expected_end_date": forms.DateInput(attrs={"type": "date"}),
+            "actual_end_date": forms.DateInput(attrs={"type": "date"}),
+            "notes": forms.Textarea(attrs={"rows": 3}),
+        }
+
+    def __init__(self, *args, farmer=None, project=None, **kwargs):
+        self.farmer = farmer
+        self.selected_project = project
+        super().__init__(*args, **kwargs)
+        if farmer:
+            self.instance.farmer = farmer
+            self.fields["farm"].queryset = Farm.objects.filter(farmer=farmer).order_by("farm_name")
+            self.fields["project"].queryset = FarmProject.objects.filter(farmer=farmer, is_deleted=False).select_related("farm")
+        if project:
+            self.instance.project = project
+            self.instance.farm = project.farm
+            self.fields["project"].initial = project
+            self.fields["farm"].initial = project.farm
+            self.fields["project"].widget = forms.HiddenInput()
+            self.fields["farm"].widget = forms.HiddenInput()
+        if not self.initial.get("start_date") and not self.instance.pk:
+            self.initial["start_date"] = timezone.localdate()
+        apply_tailwind_classes(self)
+
+    def _post_clean(self):
+        if self.farmer:
+            self.instance.farmer = self.farmer
+        project = self.selected_project or (self.cleaned_data.get("project") if hasattr(self, "cleaned_data") else None)
+        if project:
+            self.instance.project = project
+            self.instance.farm = project.farm
+        super()._post_clean()
+
+    def clean(self):
+        cleaned = super().clean()
+        project = self.selected_project or cleaned.get("project")
+        code = (cleaned.get("batch_code") or "").strip().upper()
+        if project and code:
+            qs = ProductionBatch.objects.filter(project=project, batch_code__iexact=code, is_deleted=False)
+            if self.instance.pk:
+                qs = qs.exclude(pk=self.instance.pk)
+            if qs.exists():
+                self.add_error("batch_code", "This batch code already exists under the selected project.")
+        return cleaned
+
+
 class ProjectScopedFormMixin:
     def __init__(self, *args, farmer=None, **kwargs):
         self.farmer = farmer
@@ -149,12 +206,17 @@ class ProjectScopedFormMixin:
         if farmer:
             farms = Farm.objects.filter(farmer=farmer)
             projects = FarmProject.objects.filter(farmer=farmer, is_deleted=False).select_related("farm")
+            batches = ProductionBatch.objects.filter(farmer=farmer, is_deleted=False).select_related("project", "farm")
             if "farm" in self.fields:
                 self.fields["farm"].queryset = farms
             if "project" in self.fields:
                 self.fields["project"].queryset = projects
                 self.fields["project"].required = True
-                self.fields["project"].help_text = "Choose the farm project/product this record belongs to."
+                self.fields["project"].help_text = "Choose the long-term farm project/product."
+            if "batch" in self.fields:
+                self.fields["batch"].queryset = batches
+                self.fields["batch"].required = True
+                self.fields["batch"].help_text = "Choose the season, flock, pond, or production cycle this record belongs to."
         apply_tailwind_classes(self)
 
 
@@ -164,8 +226,13 @@ class ProjectScopedFormMixin:
         if self.farmer:
             self.instance.farmer = self.farmer
         project = self.cleaned_data.get("project") if hasattr(self, "cleaned_data") else None
+        batch = self.cleaned_data.get("batch") if hasattr(self, "cleaned_data") else None
         farm = self.cleaned_data.get("farm") if hasattr(self, "cleaned_data") else None
-        if project:
+        if batch:
+            self.instance.batch = batch
+            self.instance.project = batch.project
+            self.instance.farm = batch.farm
+        elif project:
             self.instance.project = project
             self.instance.farm = project.farm
         elif farm:
@@ -175,8 +242,14 @@ class ProjectScopedFormMixin:
     def clean(self):
         cleaned = super().clean()
         project = cleaned.get("project")
+        batch = cleaned.get("batch")
         farm = cleaned.get("farm")
-        if project:
+        if batch:
+            cleaned["project"] = batch.project
+            cleaned["farm"] = batch.farm
+            if project and project != batch.project:
+                self.add_error("project", "Project must match the selected batch.")
+        elif project:
             cleaned["farm"] = project.farm
             if farm and farm != project.farm:
                 self.add_error("farm", "Farm must match the selected project.")
@@ -187,7 +260,7 @@ class HarvestRecordForm(ProjectScopedFormMixin, forms.ModelForm):
     class Meta:
         model = HarvestRecord
         fields = [
-            "project", "farm", "crop_name", "variety", "season", "acreage_used",
+            "batch", "project", "farm", "crop_name", "variety", "season", "acreage_used",
             "expected_yield", "actual_yield", "unit", "harvest_date", "notes",
         ]
         labels = {"crop_name": "Product / output name", "actual_yield": "Actual quantity"}
@@ -197,7 +270,7 @@ class HarvestRecordForm(ProjectScopedFormMixin, forms.ModelForm):
 class FarmExpenseForm(ProjectScopedFormMixin, forms.ModelForm):
     class Meta:
         model = FarmExpense
-        fields = ["project", "farm", "expense_date", "category", "description", "amount", "season", "receipt_number"]
+        fields = ["batch", "project", "farm", "expense_date", "category", "description", "amount", "season", "receipt_number"]
         widgets = {"expense_date": forms.DateInput(attrs={"type": "date"}), "description": forms.Textarea(attrs={"rows": 4})}
 
 
@@ -205,7 +278,7 @@ class SalesRecordForm(ProjectScopedFormMixin, forms.ModelForm):
     class Meta:
         model = SalesRecord
         fields = [
-            "project", "farm", "harvest", "crop_name", "quantity", "unit", "price_per_unit",
+            "batch", "project", "farm", "harvest", "crop_name", "quantity", "unit", "price_per_unit",
             "buyer_name", "sale_channel", "sale_date", "notes",
         ]
         labels = {"crop_name": "Product sold"}

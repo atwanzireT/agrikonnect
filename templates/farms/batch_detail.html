@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}{{ batch.display_name }} | AgroSync{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+  <div class="rounded-2xl bg-gradient-to-r from-green-700 to-emerald-600 p-6 text-white shadow-xl">
+    <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+      <div><h1 class="text-2xl font-bold">{{ batch.display_name }}</h1><p class="text-green-50">{{ batch.project.name }} · {{ batch.farm.farm_name }} · {{ batch.get_status_display }}</p></div>
+      <div class="flex gap-2"><a href="{% url 'farms:batch_update' batch.pk %}" class="px-4 py-2 rounded-xl bg-white text-green-700 font-semibold">Edit</a><a href="{% url 'farms:batch_list' %}" class="px-4 py-2 rounded-xl bg-green-800/40 text-white">All Batches</a></div>
+    </div>
+  </div>
+
+  <div class="grid md:grid-cols-4 gap-4">
+    <div class="bg-white rounded-2xl p-5 border"><p class="text-sm text-gray-500">Revenue</p><p class="text-xl font-bold">{{ batch.actual_revenue }}</p></div>
+    <div class="bg-white rounded-2xl p-5 border"><p class="text-sm text-gray-500">Expenses</p><p class="text-xl font-bold">{{ batch.actual_expenses }}</p></div>
+    <div class="bg-white rounded-2xl p-5 border"><p class="text-sm text-gray-500">Profit</p><p class="text-xl font-bold">{{ batch.profit }}</p></div>
+    <div class="bg-white rounded-2xl p-5 border"><p class="text-sm text-gray-500">Stock Balance</p><p class="text-xl font-bold">{{ batch.stock_balance }} {{ batch.expected_unit }}</p></div>
+  </div>
+
+  <div class="grid lg:grid-cols-2 gap-6">
+    <section class="bg-white rounded-2xl border p-5"><h2 class="font-bold mb-3">Harvests</h2>{% for r in harvests %}<p class="py-2 border-b"><b>{{ r.actual_yield }} {{ r.unit }}</b> {{ r.crop_name }} <span class="text-gray-500">{{ r.harvest_date }}</span></p>{% empty %}<p class="text-gray-500">No harvests recorded.</p>{% endfor %}</section>
+    <section class="bg-white rounded-2xl border p-5"><h2 class="font-bold mb-3">Sales</h2>{% for s in sales %}<p class="py-2 border-b"><b>{{ s.total_amount }}</b> {{ s.quantity }} {{ s.unit }} {{ s.crop_name }} <span class="text-gray-500">{{ s.sale_date }}</span></p>{% empty %}<p class="text-gray-500">No sales recorded.</p>{% endfor %}</section>
+    <section class="bg-white rounded-2xl border p-5"><h2 class="font-bold mb-3">Expenses</h2>{% for e in expenses %}<p class="py-2 border-b"><b>{{ e.amount }}</b> {{ e.category }} <span class="text-gray-500">{{ e.expense_date }}</span></p>{% empty %}<p class="text-gray-500">No expenses recorded.</p>{% endfor %}</section>
+    <section class="bg-white rounded-2xl border p-5"><h2 class="font-bold mb-3">Activities</h2>{% for a in activities %}<p class="py-2 border-b"><b>{{ a.title }}</b> {{ a.get_activity_type_display }} <span class="text-gray-500">{{ a.activity_date }}</span></p>{% empty %}<p class="text-gray-500">No activities recorded.</p>{% endfor %}</section>
+  </div>
+</div>
+{% endblock %}

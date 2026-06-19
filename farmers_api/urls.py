@@ -14,6 +14,7 @@ from .views import (
     FarmExpenseViewSet,
     SalesRecordViewSet,
     FarmProjectViewSet,
+    ProductionBatchViewSet,
     ProjectPlannedActivityViewSet,
     ProjectInputRecordViewSet,
     ProjectRevenueRecordViewSet,
@@ -34,6 +35,7 @@ router.register("harvests", HarvestRecordViewSet, basename="api-harvests")
 router.register("expenses", FarmExpenseViewSet, basename="api-expenses")
 router.register("sales", SalesRecordViewSet, basename="api-sales")
 router.register("projects", FarmProjectViewSet, basename="api-projects")
+router.register("batches", ProductionBatchViewSet, basename="api-batches")
 router.register("project-plans", ProjectPlannedActivityViewSet, basename="api-project-plans")
 router.register("project-inputs", ProjectInputRecordViewSet, basename="api-project-inputs")
 router.register("project-revenues", ProjectRevenueRecordViewSet, basename="api-project-revenues")
