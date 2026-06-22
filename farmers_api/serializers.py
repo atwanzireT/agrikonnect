@@ -142,6 +142,7 @@ class FarmerLoginSerializer(serializers.Serializer):
 
 class FarmerProfileSerializer(serializers.Serializer):
     id = serializers.UUIDField(read_only=True)
+    username = serializers.CharField(read_only=True)
     full_name = serializers.CharField(read_only=True)
     phone = serializers.CharField(read_only=True, allow_null=True)
     email = serializers.EmailField(read_only=True, allow_null=True)
@@ -257,6 +258,10 @@ class HarvestRecordSerializer(ProjectLinkedSerializer):
 
 
 class FarmExpenseSerializer(ProjectLinkedSerializer):
+    farm_name = serializers.CharField(source="farm.farm_name", read_only=True)
+    project_name = serializers.CharField(source="project.name", read_only=True)
+    batch_name = serializers.CharField(source="batch.display_name", read_only=True)
+
     class Meta:
         model = FarmExpense
         fields = "__all__"
@@ -265,6 +270,10 @@ class FarmExpenseSerializer(ProjectLinkedSerializer):
 
 
 class SalesRecordSerializer(ProjectLinkedSerializer):
+    farm_name = serializers.CharField(source="farm.farm_name", read_only=True)
+    project_name = serializers.CharField(source="project.name", read_only=True)
+    batch_name = serializers.CharField(source="batch.display_name", read_only=True)
+
     class Meta:
         model = SalesRecord
         fields = "__all__"
@@ -273,6 +282,7 @@ class SalesRecordSerializer(ProjectLinkedSerializer):
 
 
 class FarmProjectSerializer(FarmerOwnedModelSerializer):
+    farm_name = serializers.CharField(source="farm.farm_name", read_only=True)
     planned_profit = serializers.DecimalField(max_digits=14, decimal_places=2, read_only=True)
     actual_cost = serializers.DecimalField(max_digits=14, decimal_places=2, read_only=True)
     actual_revenue = serializers.DecimalField(max_digits=14, decimal_places=2, read_only=True)
@@ -291,6 +301,8 @@ class FarmProjectSerializer(FarmerOwnedModelSerializer):
 
 
 class ProductionBatchSerializer(FarmerOwnedModelSerializer):
+    farm_name = serializers.CharField(source="farm.farm_name", read_only=True)
+    project_name = serializers.CharField(source="project.name", read_only=True)
     display_name = serializers.CharField(read_only=True)
     actual_expenses = serializers.DecimalField(max_digits=14, decimal_places=2, read_only=True)
     actual_revenue = serializers.DecimalField(max_digits=14, decimal_places=2, read_only=True)
@@ -352,6 +364,7 @@ class ProduceListingImageSerializer(serializers.ModelSerializer):
 
 
 class ProduceListingSerializer(serializers.ModelSerializer):
+    farm_name = serializers.CharField(source="farm.farm_name", read_only=True)
     farmer_name = serializers.CharField(source="farmer.full_name", read_only=True)
     pin_type = serializers.SerializerMethodField()
     images = ProduceListingImageSerializer(many=True, read_only=True)

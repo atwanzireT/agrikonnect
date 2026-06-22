@@ -111,3 +111,27 @@ Listing API responses now include:
 - `description`
 - `images[]`
 - `primary_image_url`
+
+## Farmer app read API
+
+The farmer mobile app can now fetch the farmer account, products, expenses, projects, batches, and sales through clearer read endpoints under `/api/farmers/`.
+
+Use token auth on every request after login:
+
+```http
+Authorization: Token <token>
+```
+
+Important endpoints:
+
+- `GET /api/farmers/details/` - farmer profile plus high-level counts and totals.
+- `GET /api/farmers/app-data/?limit=30` - one payload for the app home/cache screen: farmer, farms, projects, batches, farmer products, expenses, and sales.
+- `GET /api/farmers/app-data/?include_open_products=true` - also includes open marketplace products.
+- `GET /api/farmers/listings/` or `GET /api/farmers/my-listings/` - products uploaded by the logged-in farmer.
+- `GET /api/farmers/products/` - open marketplace products.
+- `GET /api/farmers/product/<product_id>/` - product detail for the farmer's own product or any open marketplace product.
+- `GET /api/farmers/expenses/` - farmer expenses.
+- `GET /api/farmers/expenses/<expense_id>/` - expense detail.
+- `GET /api/farmers/me/` - farmer account details only.
+
+Product responses include `farm_name`, `farmer_name`, `description`, `images[]`, and `primary_image_url`. Expense, sale, project, and batch responses include readable farm/project/batch names where available so the Flutter app can display clean cards without extra lookups.

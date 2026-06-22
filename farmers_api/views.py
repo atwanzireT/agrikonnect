@@ -87,6 +87,84 @@ class FarmerProfileAPIView(APIView):
         return Response(FarmerProfileSerializer(request.user).data)
 
 
+
+
+class FarmerDetailsAPIView(APIView):
+    """Compact profile/details payload for the farmer app account screen."""
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        farms = Farm.objects.filter(farmer=user, is_deleted=False)
+        products = ProduceListing.objects.filter(farmer=user)
+        expenses = FarmExpense.objects.filter(farmer=user, is_deleted=False)
+        sales = SalesRecord.objects.filter(farmer=user, is_deleted=False)
+        total_expenses = expenses.aggregate(total=Sum("amount"))["total"] or 0
+        total_sales = sales.aggregate(total=Sum("total_amount"))["total"] or 0
+        return Response({
+            "farmer": FarmerProfileSerializer(user).data,
+            "summary": {
+                "farms_count": farms.count(),
+                "projects_count": FarmProject.objects.filter(farmer=user, is_deleted=False).count(),
+                "batches_count": ProductionBatch.objects.filter(farmer=user, is_deleted=False).count(),
+                "products_count": products.count(),
+                "open_products_count": products.filter(status=ListingStatusChoices.OPEN).count(),
+                "expenses_count": expenses.count(),
+                "sales_count": sales.count(),
+                "total_expenses": total_expenses,
+                "total_sales": total_sales,
+                "net_sales_after_expenses": total_sales - total_expenses,
+            },
+        })
+
+
+class FarmerAppDataAPIView(APIView):
+    """One read endpoint for the farmer app home/cache screen.
+
+    Query params:
+    - limit: max rows per collection, default 30, max 100
+    - include_open_products=true to include marketplace products from other farmers
+    """
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_limit(self, request):
+        try:
+            return max(1, min(int(request.query_params.get("limit", 30)), 100))
+        except (TypeError, ValueError):
+            return 30
+
+    def get(self, request):
+        user = request.user
+        limit = self.get_limit(request)
+        data = {
+            "farmer": FarmerProfileSerializer(user).data,
+            "farms": FarmSerializer(Farm.objects.filter(farmer=user, is_deleted=False)[:limit], many=True, context={"request": request}).data,
+            "projects": FarmProjectSerializer(FarmProject.objects.filter(farmer=user, is_deleted=False).select_related("farm")[:limit], many=True, context={"request": request}).data,
+            "batches": ProductionBatchSerializer(ProductionBatch.objects.filter(farmer=user, is_deleted=False).select_related("farm", "project")[:limit], many=True, context={"request": request}).data,
+            "products": ProduceListingSerializer(ProduceListing.objects.filter(farmer=user).select_related("farm", "farmer").prefetch_related("images")[:limit], many=True, context={"request": request}).data,
+            "expenses": FarmExpenseSerializer(FarmExpense.objects.filter(farmer=user, is_deleted=False).select_related("farm", "project", "batch")[:limit], many=True, context={"request": request}).data,
+            "sales": SalesRecordSerializer(SalesRecord.objects.filter(farmer=user, is_deleted=False).select_related("farm", "project", "batch")[:limit], many=True, context={"request": request}).data,
+        }
+        if request.query_params.get("include_open_products") == "true":
+            open_qs = ProduceListing.objects.filter(status=ListingStatusChoices.OPEN).select_related("farm", "farmer").prefetch_related("images")
+            data["open_products"] = ProduceListingSerializer(open_qs[:limit], many=True, context={"request": request}).data
+        return Response(data)
+
+
+class FarmerProductDetailAPIView(APIView):
+    """Product detail endpoint for the app. Farmers can view their own products and open marketplace products."""
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, pk):
+        product = ProduceListing.objects.filter(Q(id=pk), Q(farmer=request.user) | Q(status=ListingStatusChoices.OPEN)).select_related("farm", "farmer").prefetch_related("images").first()
+        if not product:
+            return Response({"detail": "Product not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response(ProduceListingSerializer(product, context={"request": request}).data)
+
+
 class FarmerDashboardAPIView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
