@@ -583,3 +583,104 @@ class MarketplacePurchaseSerializer(serializers.ModelSerializer):
         model = MarketplacePurchase
         fields = "__all__"
         read_only_fields = ["buyer", "total_amount", "status", "created_at", "updated_at"]
+
+
+class ProductionBatchLiteSerializer(serializers.ModelSerializer):
+    display_name = serializers.CharField(read_only=True)
+    project_name = serializers.CharField(source="project.name", read_only=True)
+    actual_expenses = serializers.DecimalField(max_digits=14, decimal_places=2, read_only=True)
+    actual_revenue = serializers.DecimalField(max_digits=14, decimal_places=2, read_only=True)
+    profit = serializers.DecimalField(max_digits=14, decimal_places=2, read_only=True)
+    harvested_quantity = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
+    sold_quantity = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
+    stock_balance = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
+
+    class Meta:
+        model = ProductionBatch
+        fields = [
+            "id", "project", "project_name", "batch_code", "name", "display_name",
+            "season", "start_date", "expected_end_date", "actual_end_date", "status",
+            "area_or_units", "unit_label", "expected_quantity", "expected_unit",
+            "expected_revenue", "expected_cost", "actual_expenses", "actual_revenue",
+            "profit", "harvested_quantity", "sold_quantity", "stock_balance",
+        ]
+
+
+class ProjectPerformanceSerializer(serializers.ModelSerializer):
+    farm_name = serializers.CharField(source="farm.farm_name", read_only=True)
+    status_display = serializers.CharField(source="get_status_display", read_only=True)
+    type_display = serializers.CharField(source="get_project_type_display", read_only=True)
+    planned_profit = serializers.DecimalField(max_digits=14, decimal_places=2, read_only=True)
+    actual_cost = serializers.DecimalField(max_digits=14, decimal_places=2, read_only=True)
+    actual_revenue = serializers.DecimalField(max_digits=14, decimal_places=2, read_only=True)
+    estimated_profit = serializers.DecimalField(max_digits=14, decimal_places=2, read_only=True)
+    projected_profit = serializers.DecimalField(max_digits=14, decimal_places=2, read_only=True)
+    cost_variance = serializers.DecimalField(max_digits=14, decimal_places=2, read_only=True)
+    roi = serializers.SerializerMethodField()
+    profit_margin = serializers.SerializerMethodField()
+    progress_percent = serializers.SerializerMethodField()
+    batches_count = serializers.IntegerField(read_only=True, default=0)
+    active_batches_count = serializers.IntegerField(read_only=True, default=0)
+
+    class Meta:
+        model = FarmProject
+        fields = [
+            "id", "farm", "farm_name", "name", "project_type", "type_display", "acreage",
+            "description", "start_date", "expected_end_date", "status", "status_display",
+            "expected_revenue", "expected_cost", "target_quantity", "target_unit",
+            "planned_profit", "actual_cost", "actual_revenue", "estimated_profit",
+            "projected_profit", "cost_variance", "roi", "profit_margin", "progress_percent",
+            "batches_count", "active_batches_count", "notes", "created_at", "updated_at",
+        ]
+
+    def get_roi(self, obj):
+        cost = obj.actual_cost or 0
+        return round(((obj.estimated_profit or 0) / cost) * 100, 2) if cost else 0
+
+    def get_profit_margin(self, obj):
+        revenue = obj.actual_revenue or 0
+        return round(((obj.estimated_profit or 0) / revenue) * 100, 2) if revenue else 0
+
+    def get_progress_percent(self, obj):
+        if obj.status == "completed":
+            return 100
+        if obj.status == "planned":
+            return 0
+        total = getattr(obj, "batches_count", None) or obj.batches.filter(is_deleted=False).count()
+        if not total:
+            return 0
+        done = obj.batches.filter(is_deleted=False, status__in=["harvested", "sold_out", "closed"]).count()
+        return round((done / total) * 100, 2)
+
+
+class ProjectDetailPerformanceSerializer(ProjectPerformanceSerializer):
+    batches = serializers.SerializerMethodField()
+    recent_expenses = serializers.SerializerMethodField()
+    recent_sales = serializers.SerializerMethodField()
+    recent_inputs = serializers.SerializerMethodField()
+    recent_revenues = serializers.SerializerMethodField()
+
+    class Meta(ProjectPerformanceSerializer.Meta):
+        fields = ProjectPerformanceSerializer.Meta.fields + [
+            "batches", "recent_expenses", "recent_sales", "recent_inputs", "recent_revenues",
+        ]
+
+    def get_batches(self, obj):
+        qs = obj.batches.filter(is_deleted=False).order_by("-start_date")
+        return ProductionBatchLiteSerializer(qs, many=True, context=self.context).data
+
+    def get_recent_expenses(self, obj):
+        qs = obj.expenses.filter(is_deleted=False).order_by("-expense_date", "-created_at")[:10]
+        return FarmExpenseSerializer(qs, many=True, context=self.context).data
+
+    def get_recent_sales(self, obj):
+        qs = obj.sales_records.filter(is_deleted=False).order_by("-sale_date", "-created_at")[:10]
+        return SalesRecordSerializer(qs, many=True, context=self.context).data
+
+    def get_recent_inputs(self, obj):
+        qs = obj.input_records.filter(is_deleted=False).order_by("-record_date", "-created_at")[:10]
+        return ProjectInputRecordSerializer(qs, many=True, context=self.context).data
+
+    def get_recent_revenues(self, obj):
+        qs = obj.revenue_records.filter(is_deleted=False).order_by("-revenue_date", "-created_at")[:10]
+        return ProjectRevenueRecordSerializer(qs, many=True, context=self.context).data

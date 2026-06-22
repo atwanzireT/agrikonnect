@@ -30,6 +30,8 @@ from .views import (
     OpenBuyerRequestViewSet,
     CompanyViewSet,
     MarketOverviewAPIView,
+    FarmProfitAnalyticsAPIView,
+    FarmProfitTrendAPIView,
     ListingInquiryViewSet,
     MarketplacePurchaseViewSet,
 )
@@ -70,5 +72,7 @@ urlpatterns = [
     path("input-trends/", ProjectInputTrendsAPIView.as_view(), name="farmer-api-input-trends"),
     path("market-map/", MarketplaceMapAPIView.as_view(), name="farmer-api-market-map"),
     path("market-overview/", MarketOverviewAPIView.as_view(), name="farmer-api-market-overview"),
+    path("analytics/profit/", FarmProfitAnalyticsAPIView.as_view(), name="farmer-api-profit-analytics"),
+    path("analytics/profit-trend/", FarmProfitTrendAPIView.as_view(), name="farmer-api-profit-trend"),
     path("", include(router.urls)),
 ]

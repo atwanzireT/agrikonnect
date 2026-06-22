@@ -881,3 +881,276 @@ class FarmerOfflineSyncAPIView(APIView):
             "download": download,
             "errors": errors,
         })
+
+
+# ---------------------------------------------------------------------------
+# Enhanced farm project, batch and profit analytics API for the mobile app.
+# These definitions intentionally appear after the original classes so URL imports
+# use the upgraded viewsets without breaking older endpoint names.
+# ---------------------------------------------------------------------------
+from .serializers import ProjectPerformanceSerializer, ProjectDetailPerformanceSerializer, ProductionBatchLiteSerializer
+
+
+def _safe_percent(value, base):
+    return round((value / base) * 100, 2) if base else 0
+
+
+class FarmProjectViewSet(FarmerOwnedViewSet):
+    model = FarmProject
+    serializer_class = FarmProjectSerializer
+
+    def get_queryset(self):
+        qs = super().get_queryset().select_related("farm").prefetch_related("batches")
+        status_value = self.request.query_params.get("status")
+        project_type = self.request.query_params.get("project_type") or self.request.query_params.get("type")
+        farm_id = self.request.query_params.get("farm")
+        q = self.request.query_params.get("q") or self.request.query_params.get("search")
+        if status_value:
+            qs = qs.filter(status=status_value)
+        if project_type:
+            qs = qs.filter(project_type=project_type)
+        if farm_id:
+            qs = qs.filter(farm_id=farm_id)
+        if q:
+            qs = qs.filter(Q(name__icontains=q) | Q(description__icontains=q) | Q(farm__farm_name__icontains=q))
+        return qs.annotate(
+            batches_count=Count("batches", filter=Q(batches__is_deleted=False), distinct=True),
+            active_batches_count=Count("batches", filter=Q(batches__is_deleted=False, batches__status="active"), distinct=True),
+        )
+
+    def get_serializer_class(self):
+        if self.action == "retrieve":
+            return ProjectDetailPerformanceSerializer
+        if self.action in ["list", "performance", "dashboard_cards"]:
+            return ProjectPerformanceSerializer
+        return FarmProjectSerializer
+
+    @action(detail=False, methods=["get"], url_path="performance")
+    def performance(self, request):
+        qs = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(qs)
+        serializer = ProjectPerformanceSerializer(page or qs, many=True, context={"request": request})
+        if page is not None:
+            return self.get_paginated_response(serializer.data)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["get"], url_path="report")
+    def report(self, request, id=None):
+        project = self.get_object()
+        inputs = project.input_records.filter(is_deleted=False)
+        expenses = project.expenses.filter(is_deleted=False)
+        sales = project.sales_records.filter(is_deleted=False)
+        revenues = project.revenue_records.filter(is_deleted=False)
+        batches = project.batches.filter(is_deleted=False)
+        cost_by_category = list(inputs.values("category").annotate(total=Sum("total_cost"), records=Count("id")).order_by("-total"))
+        direct_expense_by_category = list(expenses.values("category").annotate(total=Sum("amount"), records=Count("id")).order_by("-total"))
+        monthly_sales = list(sales.annotate(month=TruncMonth("sale_date")).values("month").annotate(total=Sum("total_amount"), quantity=Sum("quantity")).order_by("month"))
+        monthly_inputs = list(inputs.annotate(month=TruncMonth("record_date")).values("month").annotate(total=Sum("total_cost"), quantity=Sum("quantity")).order_by("month"))
+        actual_revenue = project.actual_revenue or 0
+        actual_cost = project.actual_cost or 0
+        profit = actual_revenue - actual_cost
+        return Response({
+            "project": ProjectDetailPerformanceSerializer(project, context={"request": request}).data,
+            "summary": {
+                "expected_revenue": project.expected_revenue or 0,
+                "expected_cost": project.expected_cost or 0,
+                "planned_profit": project.planned_profit or 0,
+                "actual_revenue": actual_revenue,
+                "actual_cost": actual_cost,
+                "profit": profit,
+                "roi": _safe_percent(profit, actual_cost),
+                "profit_margin": _safe_percent(profit, actual_revenue),
+                "cost_variance": project.cost_variance or 0,
+                "batches_count": batches.count(),
+                "active_batches_count": batches.filter(status="active").count(),
+                "completed_batches_count": batches.filter(status__in=["harvested", "sold_out", "closed"]).count(),
+            },
+            "cost_by_category": cost_by_category,
+            "direct_expense_by_category": direct_expense_by_category,
+            "monthly_sales": monthly_sales,
+            "monthly_inputs": monthly_inputs,
+        })
+
+    @action(detail=True, methods=["post"], url_path="close")
+    def close_project(self, request, id=None):
+        project = self.get_object()
+        project.status = "completed"
+        project.save(update_fields=["status", "updated_at"])
+        return Response(ProjectPerformanceSerializer(project, context={"request": request}).data)
+
+
+class ProductionBatchViewSet(FarmerOwnedViewSet):
+    model = ProductionBatch
+    serializer_class = ProductionBatchSerializer
+
+    def get_queryset(self):
+        qs = super().get_queryset().select_related("farm", "project")
+        project_id = self.request.query_params.get("project")
+        farm_id = self.request.query_params.get("farm")
+        status_value = self.request.query_params.get("status")
+        q = self.request.query_params.get("q") or self.request.query_params.get("search")
+        if project_id:
+            qs = qs.filter(project_id=project_id)
+        if farm_id:
+            qs = qs.filter(farm_id=farm_id)
+        if status_value:
+            qs = qs.filter(status=status_value)
+        if q:
+            qs = qs.filter(Q(name__icontains=q) | Q(batch_code__icontains=q) | Q(season__icontains=q) | Q(project__name__icontains=q))
+        return qs
+
+    def get_serializer_class(self):
+        if self.action in ["list", "performance"]:
+            return ProductionBatchLiteSerializer
+        return ProductionBatchSerializer
+
+    @action(detail=False, methods=["get"], url_path="performance")
+    def performance(self, request):
+        qs = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(qs)
+        serializer = ProductionBatchLiteSerializer(page or qs, many=True, context={"request": request})
+        if page is not None:
+            return self.get_paginated_response(serializer.data)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["get"], url_path="profit-summary")
+    def profit_summary(self, request, id=None):
+        batch = self.get_object()
+        revenue = batch.actual_revenue or 0
+        expenses = batch.actual_expenses or 0
+        profit = revenue - expenses
+        return Response({
+            "batch": ProductionBatchLiteSerializer(batch, context={"request": request}).data,
+            "summary": {
+                "expected_revenue": batch.expected_revenue or 0,
+                "expected_cost": batch.expected_cost or 0,
+                "actual_revenue": revenue,
+                "actual_expenses": expenses,
+                "profit": profit,
+                "roi": _safe_percent(profit, expenses),
+                "profit_margin": _safe_percent(profit, revenue),
+                "harvested_quantity": batch.harvested_quantity or 0,
+                "sold_quantity": batch.sold_quantity or 0,
+                "stock_balance": batch.stock_balance or 0,
+            },
+        })
+
+
+class FarmProfitAnalyticsAPIView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        projects = FarmProject.objects.filter(farmer=user, is_deleted=False).select_related("farm")
+        batches = ProductionBatch.objects.filter(farmer=user, is_deleted=False).select_related("project", "farm")
+        expenses = FarmExpense.objects.filter(farmer=user, is_deleted=False)
+        sales = SalesRecord.objects.filter(farmer=user, is_deleted=False)
+        inputs = ProjectInputRecord.objects.filter(farmer=user, is_deleted=False)
+        revenues = ProjectRevenueRecord.objects.filter(farmer=user, is_deleted=False)
+        activity_totals = FarmActivity.objects.filter(farmer=user, is_deleted=False).aggregate(labour=Sum("labour_cost"), inputs=Sum("input_cost"))
+        total_direct_expenses = expenses.aggregate(total=Sum("amount"))["total"] or 0
+        total_project_inputs = inputs.aggregate(total=Sum("total_cost"))["total"] or 0
+        total_activity_cost = (activity_totals["labour"] or 0) + (activity_totals["inputs"] or 0)
+        total_cost = total_direct_expenses + total_project_inputs + total_activity_cost
+        total_sales = sales.aggregate(total=Sum("total_amount"))["total"] or 0
+        total_project_revenues = revenues.aggregate(total=Sum("amount"))["total"] or 0
+        total_revenue = total_sales + total_project_revenues
+        net_profit = total_revenue - total_cost
+        project_rows = []
+        for project in projects:
+            revenue = project.actual_revenue or 0
+            cost = project.actual_cost or 0
+            profit = revenue - cost
+            project_rows.append({
+                "id": project.id,
+                "name": project.name,
+                "farm_name": project.farm.farm_name,
+                "project_type": project.project_type,
+                "status": project.status,
+                "revenue": revenue,
+                "cost": cost,
+                "profit": profit,
+                "roi": _safe_percent(profit, cost),
+                "profit_margin": _safe_percent(profit, revenue),
+            })
+        project_rows = sorted(project_rows, key=lambda row: row["profit"], reverse=True)
+        batch_rows = []
+        for batch in batches:
+            revenue = batch.actual_revenue or 0
+            cost = batch.actual_expenses or 0
+            profit = revenue - cost
+            batch_rows.append({
+                "id": batch.id,
+                "name": batch.display_name,
+                "batch_code": batch.batch_code,
+                "project_id": batch.project_id,
+                "project_name": batch.project.name,
+                "status": batch.status,
+                "revenue": revenue,
+                "cost": cost,
+                "profit": profit,
+                "roi": _safe_percent(profit, cost),
+            })
+        batch_rows = sorted(batch_rows, key=lambda row: row["profit"], reverse=True)
+        return Response({
+            "summary": {
+                "farms_count": Farm.objects.filter(farmer=user, is_deleted=False).count(),
+                "projects_count": projects.count(),
+                "active_projects_count": projects.filter(status="active").count(),
+                "completed_projects_count": projects.filter(status="completed").count(),
+                "batches_count": batches.count(),
+                "active_batches_count": batches.filter(status="active").count(),
+                "total_revenue": total_revenue,
+                "total_cost": total_cost,
+                "net_profit": net_profit,
+                "roi": _safe_percent(net_profit, total_cost),
+                "profit_margin": _safe_percent(net_profit, total_revenue),
+            },
+            "best_project": project_rows[0] if project_rows else None,
+            "weakest_project": project_rows[-1] if project_rows else None,
+            "top_projects": project_rows[:10],
+            "top_batches": batch_rows[:10],
+            "cost_breakdown": {
+                "direct_expenses": total_direct_expenses,
+                "project_inputs": total_project_inputs,
+                "activity_costs": total_activity_cost,
+            },
+        })
+
+
+class FarmProfitTrendAPIView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        project_id = request.query_params.get("project")
+        sales = SalesRecord.objects.filter(farmer=user, is_deleted=False)
+        expenses = FarmExpense.objects.filter(farmer=user, is_deleted=False)
+        inputs = ProjectInputRecord.objects.filter(farmer=user, is_deleted=False)
+        revenues = ProjectRevenueRecord.objects.filter(farmer=user, is_deleted=False)
+        if project_id:
+            sales = sales.filter(project_id=project_id)
+            expenses = expenses.filter(project_id=project_id)
+            inputs = inputs.filter(project_id=project_id)
+            revenues = revenues.filter(project_id=project_id)
+        buckets = {}
+        def bucket(month):
+            key = month.date().isoformat() if hasattr(month, "date") else str(month)
+            buckets.setdefault(key, {"month": key, "revenue": 0, "cost": 0, "profit": 0})
+            return buckets[key]
+        for row in sales.annotate(month=TruncMonth("sale_date")).values("month").annotate(total=Sum("total_amount")):
+            bucket(row["month"])["revenue"] += row["total"] or 0
+        for row in revenues.annotate(month=TruncMonth("revenue_date")).values("month").annotate(total=Sum("amount")):
+            bucket(row["month"])["revenue"] += row["total"] or 0
+        for row in expenses.annotate(month=TruncMonth("expense_date")).values("month").annotate(total=Sum("amount")):
+            bucket(row["month"])["cost"] += row["total"] or 0
+        for row in inputs.annotate(month=TruncMonth("record_date")).values("month").annotate(total=Sum("total_cost")):
+            bucket(row["month"])["cost"] += row["total"] or 0
+        rows = []
+        for data in buckets.values():
+            data["profit"] = data["revenue"] - data["cost"]
+            data["profit_margin"] = _safe_percent(data["profit"], data["revenue"])
+            rows.append(data)
+        return Response({"results": sorted(rows, key=lambda x: x["month"])})
