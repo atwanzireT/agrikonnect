@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.db.models import Count, Sum
+from decimal import Decimal
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -658,6 +659,166 @@ def sale_update(request, pk):
             "sale": sale,
         },
     )
+
+
+def _money(value):
+    return value or Decimal("0")
+
+
+def _profit_margin(profit, revenue):
+    revenue = _money(revenue)
+    if revenue <= 0:
+        return Decimal("0")
+    return (profit / revenue) * Decimal("100")
+
+
+def _variance_percent(actual, expected):
+    expected = _money(expected)
+    if expected <= 0:
+        return Decimal("0")
+    return ((actual - expected) / expected) * Decimal("100")
+
+
+def _rank_profit_rows(rows):
+    if not rows:
+        return []
+    best_profit = max([row["profit"] for row in rows] + [Decimal("0")])
+    for index, row in enumerate(sorted(rows, key=lambda item: item["profit"], reverse=True), start=1):
+        row["rank"] = index
+        row["profit_margin"] = _profit_margin(row["profit"], row["revenue"])
+        row["cost_variance_percent"] = _variance_percent(row["cost"], row.get("expected_cost", 0))
+        row["profit_bar_percent"] = 6
+        if best_profit > 0 and row["profit"] > 0:
+            row["profit_bar_percent"] = max(6, min(100, int((row["profit"] / best_profit) * 100)))
+    return rows
+
+
+@login_required
+def profit_compare(request):
+    compare = request.GET.get("compare", "projects")
+    project_id = request.GET.get("project")
+    farm_id = request.GET.get("farm")
+
+    projects = FarmProject.objects.filter(farmer=request.user, is_deleted=False).select_related("farm").order_by("name")
+    farms = Farm.objects.filter(farmer=request.user, is_deleted=False).order_by("farm_name")
+    selected_project = None
+    selected_farm = None
+    rows = []
+
+    if compare == "batches":
+        batches = ProductionBatch.objects.filter(farmer=request.user, is_deleted=False).select_related("project", "farm")
+        if project_id:
+            selected_project = get_object_or_404(projects, pk=project_id)
+            batches = batches.filter(project=selected_project)
+        if farm_id:
+            selected_farm = get_object_or_404(farms, pk=farm_id)
+            batches = batches.filter(farm=selected_farm)
+        for batch in batches:
+            rows.append({
+                "label": batch.display_name,
+                "subtitle": f"{batch.project.name} • {batch.farm.farm_name}",
+                "status": batch.get_status_display(),
+                "start_date": batch.start_date,
+                "expected_revenue": _money(batch.expected_revenue),
+                "expected_cost": _money(batch.expected_cost),
+                "revenue": _money(batch.actual_revenue),
+                "cost": _money(batch.actual_expenses),
+                "profit": _money(batch.profit),
+                "yield": _money(batch.harvested_quantity),
+                "sold_quantity": _money(batch.sold_quantity),
+                "url": batch.get_absolute_url() if hasattr(batch, "get_absolute_url") else None,
+                "detail_url_name": "farms:batch_detail",
+                "pk": batch.pk,
+            })
+        title = "Batch profit comparison"
+        description = "Compare seasons, flocks, ponds, or production cycles against each other."
+    elif compare == "farms":
+        for farm in farms:
+            activity_totals = farm.activities.filter(is_deleted=False).aggregate(labour=Sum("labour_cost"), inputs=Sum("input_cost"))
+            activity_cost = _money(activity_totals["labour"]) + _money(activity_totals["inputs"])
+            expense_cost = _money(farm.expenses.filter(is_deleted=False).aggregate(total=Sum("amount"))["total"])
+            revenue = _money(farm.sales_records.filter(is_deleted=False).aggregate(total=Sum("total_amount"))["total"])
+            cost = expense_cost + activity_cost
+            rows.append({
+                "label": farm.farm_name,
+                "subtitle": f"{farm.district}{' • ' + farm.subcounty if farm.subcounty else ''}",
+                "status": f"{farm.projects.filter(is_deleted=False).count()} projects",
+                "start_date": farm.created_at.date() if farm.created_at else None,
+                "expected_revenue": Decimal("0"),
+                "expected_cost": Decimal("0"),
+                "revenue": revenue,
+                "cost": cost,
+                "profit": revenue - cost,
+                "yield": _money(farm.harvest_records.filter(is_deleted=False).aggregate(total=Sum("actual_yield"))["total"]),
+                "sold_quantity": _money(farm.sales_records.filter(is_deleted=False).aggregate(total=Sum("quantity"))["total"]),
+                "detail_url_name": "farms:farm_detail",
+                "pk": farm.pk,
+            })
+        title = "Farm profit comparison"
+        description = "Compare farm locations to see which one is returning the best profit."
+    else:
+        compare = "projects"
+        if farm_id:
+            selected_farm = get_object_or_404(farms, pk=farm_id)
+            projects = projects.filter(farm=selected_farm)
+        for project in projects:
+            rows.append({
+                "label": project.name,
+                "subtitle": project.farm.farm_name,
+                "status": project.get_status_display(),
+                "start_date": project.start_date,
+                "expected_revenue": _money(project.expected_revenue),
+                "expected_cost": _money(project.expected_cost),
+                "revenue": _money(project.actual_revenue),
+                "cost": _money(project.actual_cost),
+                "profit": _money(project.estimated_profit),
+                "yield": _money(project.harvest_records.filter(is_deleted=False).aggregate(total=Sum("actual_yield"))["total"]),
+                "sold_quantity": _money(project.sales_records.filter(is_deleted=False).aggregate(total=Sum("quantity"))["total"]),
+                "detail_url_name": "farms:farm_detail",
+                "pk": project.farm.pk,
+            })
+        title = "Project profit comparison"
+        description = "Compare enterprises such as maize, poultry, dairy, fish, coffee, or apiary."
+
+    rows = _rank_profit_rows(rows)
+    total_revenue = sum((row["revenue"] for row in rows), Decimal("0"))
+    total_cost = sum((row["cost"] for row in rows), Decimal("0"))
+    total_profit = total_revenue - total_cost
+    best_row = rows[0] if rows else None
+    weakest_row = rows[-1] if rows else None
+
+    chart_rows = [
+        {
+            "label": row["label"],
+            "revenue": float(row["revenue"]),
+            "cost": float(row["cost"]),
+            "profit": float(row["profit"]),
+            "margin": float(row["profit_margin"]),
+            "yield": float(row["yield"]),
+            "sold_quantity": float(row["sold_quantity"]),
+        }
+        for row in rows[:12]
+    ]
+
+    return render(request, "farms/profit_compare.html", {
+        "compare": compare,
+        "projects": projects if compare != "projects" else FarmProject.objects.filter(farmer=request.user, is_deleted=False).select_related("farm").order_by("name"),
+        "farms": farms,
+        "selected_project": selected_project,
+        "selected_farm": selected_farm,
+        "project_id": project_id or "",
+        "farm_id": farm_id or "",
+        "rows": rows,
+        "title": title,
+        "description": description,
+        "total_revenue": total_revenue,
+        "total_cost": total_cost,
+        "total_profit": total_profit,
+        "overall_margin": _profit_margin(total_profit, total_revenue),
+        "best_row": best_row,
+        "weakest_row": weakest_row,
+        "chart_rows": chart_rows,
+    })
 
 
 @login_required

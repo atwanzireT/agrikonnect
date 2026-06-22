@@ -5,7 +5,7 @@ from farms.models import (
     Farm, FarmActivity, HarvestRecord, FarmExpense, SalesRecord,
     FarmProject, ProductionBatch, ProjectPlannedActivity, ProjectInputRecord, ProjectRevenueRecord,
 )
-from marketplace.models import ProduceListing, BuyerRequest, ListingInquiry, MarketplacePurchase
+from marketplace.models import ProduceListing, ProduceListingImage, BuyerRequest, ListingInquiry, MarketplacePurchase
 
 User = get_user_model()
 
@@ -335,12 +335,49 @@ class ProjectRevenueRecordSerializer(ProjectLinkedSerializer):
         extra_kwargs = {"farm": {"required": False, "allow_null": True}}
 
 
+class ProduceListingImageSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ProduceListingImage
+        fields = ["id", "image", "image_url", "is_primary", "sort_order", "created_at", "updated_at"]
+        read_only_fields = ["id", "image_url", "created_at", "updated_at"]
+
+    def get_image_url(self, obj):
+        if not obj.image:
+            return None
+        url = obj.image.url
+        request = self.context.get("request")
+        return request.build_absolute_uri(url) if request else url
+
+
 class ProduceListingSerializer(serializers.ModelSerializer):
     farmer_name = serializers.CharField(source="farmer.full_name", read_only=True)
     pin_type = serializers.SerializerMethodField()
+    images = ProduceListingImageSerializer(many=True, read_only=True)
+    uploaded_images = serializers.ListField(
+        child=serializers.ImageField(),
+        write_only=True,
+        required=False,
+        allow_empty=True,
+        help_text="Upload one or more product images using multipart/form-data. Use field name uploaded_images.",
+    )
+    primary_image_url = serializers.SerializerMethodField()
 
     def get_pin_type(self, obj):
         return "farmer"
+
+    def get_primary_image_url(self, obj):
+        image = None
+        try:
+            image = obj.images.filter(is_primary=True).first() or obj.images.first()
+        except Exception:
+            image = None
+        if not image or not image.image:
+            return None
+        url = image.image.url
+        request = self.context.get("request")
+        return request.build_absolute_uri(url) if request else url
 
     class Meta:
         model = ProduceListing
@@ -355,6 +392,34 @@ class ProduceListingSerializer(serializers.ModelSerializer):
         if farm and user and getattr(user, "is_authenticated", False) and getattr(farm, "farmer_id", None) != user.id:
             raise serializers.ValidationError({"farm": "This farm does not belong to your account."})
         return attrs
+
+    def _create_images(self, listing, images):
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+        if not images or not user or not getattr(user, "is_authenticated", False):
+            return
+        already_has_primary = listing.images.filter(is_primary=True).exists()
+        start_order = listing.images.count()
+        for index, image in enumerate(images):
+            ProduceListingImage.objects.create(
+                listing=listing,
+                uploaded_by=user,
+                image=image,
+                is_primary=(not already_has_primary and index == 0),
+                sort_order=start_order + index,
+            )
+
+    def create(self, validated_data):
+        images = validated_data.pop("uploaded_images", [])
+        listing = super().create(validated_data)
+        self._create_images(listing, images)
+        return listing
+
+    def update(self, instance, validated_data):
+        images = validated_data.pop("uploaded_images", [])
+        listing = super().update(instance, validated_data)
+        self._create_images(listing, images)
+        return listing
 
 
 class BuyerRequestSerializer(serializers.ModelSerializer):

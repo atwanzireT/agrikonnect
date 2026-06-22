@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Profit Summary | AgroSync{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+  <div class="rounded-3xl bg-gradient-to-r from-green-700 to-emerald-600 p-6 text-white shadow-xl flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div>
+      <p class="text-green-100 text-sm font-semibold">Farm finance</p>
+      <h1 class="text-3xl font-bold">Profit Summary</h1>
+      <p class="mt-2 text-green-50">Overall income, expenses, and estimated profit across your farm records.</p>
+    </div>
+    <a href="{% url 'farms:profit_compare' %}" class="inline-flex items-center justify-center rounded-xl bg-white/20 px-4 py-2 text-sm font-semibold border border-white/30 hover:bg-white/30">Compare profits</a>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div class="rounded-2xl bg-white border border-gray-200 p-5 shadow-sm"><p class="text-sm text-gray-500">Farms</p><p class="mt-1 text-2xl font-bold text-gray-900">{{ total_farms }}</p></div>
+    <div class="rounded-2xl bg-white border border-gray-200 p-5 shadow-sm"><p class="text-sm text-gray-500">Sales</p><p class="mt-1 text-2xl font-bold text-gray-900">UGX {{ total_sales|floatformat:0 }}</p></div>
+    <div class="rounded-2xl bg-white border border-gray-200 p-5 shadow-sm"><p class="text-sm text-gray-500">Expenses</p><p class="mt-1 text-2xl font-bold text-gray-900">UGX {{ total_expenses|floatformat:0 }}</p></div>
+    <div class="rounded-2xl bg-white border border-gray-200 p-5 shadow-sm"><p class="text-sm text-gray-500">Estimated profit</p><p class="mt-1 text-2xl font-bold {% if estimated_profit >= 0 %}text-green-700{% else %}text-red-600{% endif %}">UGX {{ estimated_profit|floatformat:0 }}</p></div>
+  </div>
+
+  <div class="rounded-2xl bg-white border border-gray-200 p-6 shadow-sm">
+    <h2 class="text-xl font-bold text-gray-900">Compare deeper</h2>
+    <p class="mt-1 text-gray-500">Open the comparison dashboard to rank batches, projects, or farms by profit, cost, revenue, yield, and margin.</p>
+    <div class="mt-5 flex flex-wrap gap-3">
+      <a href="{% url 'farms:profit_compare' %}?compare=batches" class="rounded-xl bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700">Compare batches</a>
+      <a href="{% url 'farms:profit_compare' %}?compare=projects" class="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">Compare projects</a>
+      <a href="{% url 'farms:profit_compare' %}?compare=farms" class="rounded-xl bg-gray-900 px-4 py-2 text-sm font-semibold text-white hover:bg-black">Compare farms</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

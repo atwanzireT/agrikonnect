@@ -56,11 +56,13 @@
 
         {% if request.user == listing.farmer %}
         <div class="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h2 class="text-lg font-bold text-gray-900">Upload Image</h2>
-            <form method="post" action="{% url 'marketplace:listing_image_upload' listing.pk %}" enctype="multipart/form-data" class="ajax-form mt-4 space-y-4">
-                {% csrf_token %}<div class="ajax-errors"></div><div class="ajax-success"></div>
-                {% include "partials/form_fields.html" with form=image_form %}
-                <button type="submit" class="w-full rounded-2xl bg-green-700 px-4 py-3 text-sm font-bold text-white hover:bg-green-800">Upload Image</button>
+            <h2 class="text-lg font-bold text-gray-900">Add More Product Images</h2>
+            <p class="mt-1 text-sm text-gray-500">Upload clear produce photos to improve buyer trust.</p>
+            <form method="post" action="{% url 'marketplace:listing_image_upload' listing.pk %}" enctype="multipart/form-data" class="mt-4 space-y-4">
+                {% csrf_token %}
+                <input type="file" name="images" multiple accept="image/*" required
+                       class="block w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm file:mr-4 file:rounded-xl file:border-0 file:bg-green-700 file:px-4 file:py-2 file:text-sm file:font-bold file:text-white">
+                <button type="submit" class="w-full rounded-2xl bg-green-700 px-4 py-3 text-sm font-bold text-white hover:bg-green-800">Upload Images</button>
             </form>
         </div>
         {% endif %}

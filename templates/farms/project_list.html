@@ -8,6 +8,7 @@
       <h1 class="text-3xl font-bold text-white">Farm Projects</h1>
       <p class="mt-1 text-green-100">Manage the enterprises your farms are running.</p>
     </div>
+    <a href="{% url 'farms:profit_compare' %}?compare=projects" class="inline-flex items-center gap-2 rounded-xl bg-white/20 px-5 py-3 text-sm font-semibold text-white border border-white/30 hover:bg-white/30"><i class="fas fa-chart-line"></i> Compare Profits</a>
     <a href="{% url 'farms:project_create' %}" class="inline-flex items-center gap-2 rounded-xl bg-white/20 px-5 py-3 text-sm font-semibold text-white border border-white/30 hover:bg-white/30">
       <i class="fas fa-plus-circle"></i> Add Project
     </a>

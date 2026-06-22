@@ -15,6 +15,20 @@ from .models import (
 )
 
 
+def _save_listing_images(listing, user, files):
+    """Attach uploaded product images and make the first image primary when needed."""
+    existing_primary = listing.images.filter(is_primary=True).exists()
+    base_order = listing.images.count()
+    for index, image in enumerate(files):
+        ProduceListingImage.objects.create(
+            listing=listing,
+            uploaded_by=user,
+            image=image,
+            is_primary=(not existing_primary and index == 0),
+            sort_order=base_order + index,
+        )
+
+
 @login_required
 def business_dashboard(request):
     recent_demands = BuyerRequest.objects.filter(
@@ -107,14 +121,9 @@ def listing_create(request):
             listing.farmer = request.user
             listing.save()
 
-            for image in request.FILES.getlist("images"):
-                ProduceListingImage.objects.create(
-                    listing=listing,
-                    uploaded_by=request.user,
-                    image=image,
-                )
+            _save_listing_images(listing, request.user, request.FILES.getlist("images"))
 
-            messages.success(request, "Produce listing created successfully.")
+            messages.success(request, "Product listing created successfully with its description and images.")
             return redirect("marketplace:listing_detail", pk=listing.pk)
     else:
         form = ProduceListingForm(farmer=request.user)
@@ -134,12 +143,7 @@ def listing_image_upload(request, pk):
             messages.error(request, "Please select at least one image.")
             return redirect("marketplace:listing_image_upload", pk=listing.pk)
 
-        for image in images:
-            ProduceListingImage.objects.create(
-                listing=listing,
-                uploaded_by=request.user,
-                image=image,
-            )
+        _save_listing_images(listing, request.user, images)
 
         messages.success(request, "Images uploaded successfully.")
         return redirect("marketplace:listing_detail", pk=listing.pk)

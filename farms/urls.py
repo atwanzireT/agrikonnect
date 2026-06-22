@@ -11,10 +11,17 @@ urlpatterns = [
     path("dashboard/", views.farmer_dashboard, name="farmer_dashboard_alias"),
 
     # Farms
-    path("farms/", views.farm_list, name="farm_list"),
-    path("farms/create/", views.farm_create, name="farm_create"),
-    path("farms/<uuid:pk>/", views.farm_detail, name="farm_detail"),
-    path("farms/<uuid:pk>/edit/", views.farm_update, name="farm_update"),
+    # Primary clean URLs used by navbar and templates.
+    path("my-farms/", views.farm_list, name="farm_list"),
+    path("my-farms/create/", views.farm_create, name="farm_create"),
+    path("my-farms/<uuid:pk>/", views.farm_detail, name="farm_detail"),
+    path("my-farms/<uuid:pk>/edit/", views.farm_update, name="farm_update"),
+
+    # Backward-compatible aliases for old links/bookmarks.
+    path("farms/", views.farm_list, name="farm_list_legacy"),
+    path("farms/create/", views.farm_create, name="farm_create_legacy"),
+    path("farms/<uuid:pk>/", views.farm_detail, name="farm_detail_legacy"),
+    path("farms/<uuid:pk>/edit/", views.farm_update, name="farm_update_legacy"),
 
     # Farm Projects
     path("projects/", views.project_list, name="project_list"),
@@ -44,6 +51,7 @@ urlpatterns = [
     path("sales/create/", views.sale_create, name="sale_create"),
     path("sales/<uuid:pk>/edit/", views.sale_update, name="sale_update"),
 
-    # Profit Summary
+    # Profit Summary and Comparisons
     path("profit/", views.profit_summary, name="profit_summary"),
+    path("profit/compare/", views.profit_compare, name="profit_compare"),
 ]

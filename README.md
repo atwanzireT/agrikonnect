@@ -82,3 +82,32 @@ python manage.py migrate
 ```
 
 Note: Django was not installed in the rebuild container, so migrations were written manually and Python syntax was checked with `py_compile`.
+
+## Farmer API product images
+
+Farmers can now upload product descriptions and images through the API.
+
+Create a listing with images using `multipart/form-data`:
+
+`POST /api/farmers/listings/`
+
+Fields include the existing listing fields plus:
+
+- `description` - optional product description
+- `uploaded_images` - one or more image files
+
+Add images to an existing listing:
+
+`POST /api/farmers/listings/<listing_id>/images/`
+
+Use one of these multipart file field names:
+
+- `images`
+- `uploaded_images`
+- `image`
+
+Listing API responses now include:
+
+- `description`
+- `images[]`
+- `primary_image_url`

@@ -10,12 +10,13 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.models import Token
+from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 
 from farms.models import (
     Farm, FarmActivity, HarvestRecord, FarmExpense, SalesRecord,
     FarmProject, ProductionBatch, ProjectPlannedActivity, ProjectInputRecord, ProjectRevenueRecord,
 )
-from marketplace.models import ProduceListing, BuyerRequest, ListingInquiry, MarketplacePurchase, ListingStatusChoices, RequestStatusChoices
+from marketplace.models import ProduceListing, ProduceListingImage, BuyerRequest, ListingInquiry, MarketplacePurchase, ListingStatusChoices, RequestStatusChoices
 
 from .serializers import (
     AccountRegistrationSerializer,
@@ -32,6 +33,7 @@ from .serializers import (
     ProjectInputRecordSerializer,
     ProjectRevenueRecordSerializer,
     ProduceListingSerializer,
+    ProduceListingImageSerializer,
     BuyerRequestSerializer,
     ListingInquirySerializer,
     MarketplacePurchaseSerializer,
@@ -281,6 +283,135 @@ class ProjectRevenueRecordViewSet(FarmerOwnedViewSet):
     serializer_class = ProjectRevenueRecordSerializer
 
 
+class ProfitComparisonAPIView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def _margin(self, profit, revenue):
+        return (profit / revenue * 100) if revenue else 0
+
+    def _row(self, item_type, item_id, name, subtitle, status_label, expected_revenue, expected_cost, revenue, cost, extra=None):
+        profit = revenue - cost
+        data = {
+            "type": item_type,
+            "id": item_id,
+            "name": name,
+            "subtitle": subtitle,
+            "status": status_label,
+            "expected_revenue": expected_revenue or 0,
+            "expected_cost": expected_cost or 0,
+            "actual_revenue": revenue or 0,
+            "actual_cost": cost or 0,
+            "profit": profit,
+            "profit_margin": self._margin(profit, revenue),
+        }
+        if extra:
+            data.update(extra)
+        return data
+
+    def get(self, request):
+        user = request.user
+        compare = request.query_params.get("compare", "projects")
+        farm_id = request.query_params.get("farm")
+        project_id = request.query_params.get("project")
+        rows = []
+
+        if compare == "batches":
+            qs = ProductionBatch.objects.filter(farmer=user, is_deleted=False).select_related("project", "farm")
+            if project_id:
+                qs = qs.filter(project_id=project_id)
+            if farm_id:
+                qs = qs.filter(farm_id=farm_id)
+            for batch in qs:
+                rows.append(self._row(
+                    "batch",
+                    batch.id,
+                    batch.display_name,
+                    f"{batch.project.name} • {batch.farm.farm_name}",
+                    batch.get_status_display(),
+                    batch.expected_revenue,
+                    batch.expected_cost,
+                    batch.actual_revenue,
+                    batch.actual_expenses,
+                    {
+                        "project_id": batch.project_id,
+                        "farm_id": batch.farm_id,
+                        "start_date": batch.start_date,
+                        "harvested_quantity": batch.harvested_quantity,
+                        "sold_quantity": batch.sold_quantity,
+                        "stock_balance": batch.stock_balance,
+                    },
+                ))
+        elif compare == "farms":
+            qs = Farm.objects.filter(farmer=user, is_deleted=False)
+            if farm_id:
+                qs = qs.filter(id=farm_id)
+            for farm in qs:
+                activity_totals = farm.activities.filter(is_deleted=False).aggregate(labour=Sum("labour_cost"), inputs=Sum("input_cost"))
+                activity_cost = (activity_totals["labour"] or 0) + (activity_totals["inputs"] or 0)
+                expenses = farm.expenses.filter(is_deleted=False).aggregate(total=Sum("amount"))["total"] or 0
+                revenue = farm.sales_records.filter(is_deleted=False).aggregate(total=Sum("total_amount"))["total"] or 0
+                cost = expenses + activity_cost
+                rows.append(self._row(
+                    "farm",
+                    farm.id,
+                    farm.farm_name,
+                    farm.district,
+                    f"{farm.projects.filter(is_deleted=False).count()} projects",
+                    0,
+                    0,
+                    revenue,
+                    cost,
+                    {
+                        "acreage": farm.acreage,
+                        "harvested_quantity": farm.harvest_records.filter(is_deleted=False).aggregate(total=Sum("actual_yield"))["total"] or 0,
+                        "sold_quantity": farm.sales_records.filter(is_deleted=False).aggregate(total=Sum("quantity"))["total"] or 0,
+                    },
+                ))
+        else:
+            compare = "projects"
+            qs = FarmProject.objects.filter(farmer=user, is_deleted=False).select_related("farm")
+            if farm_id:
+                qs = qs.filter(farm_id=farm_id)
+            for project in qs:
+                rows.append(self._row(
+                    "project",
+                    project.id,
+                    project.name,
+                    project.farm.farm_name,
+                    project.get_status_display(),
+                    project.expected_revenue,
+                    project.expected_cost,
+                    project.actual_revenue,
+                    project.actual_cost,
+                    {
+                        "farm_id": project.farm_id,
+                        "start_date": project.start_date,
+                        "project_type": project.project_type,
+                        "harvested_quantity": project.harvest_records.filter(is_deleted=False).aggregate(total=Sum("actual_yield"))["total"] or 0,
+                        "sold_quantity": project.sales_records.filter(is_deleted=False).aggregate(total=Sum("quantity"))["total"] or 0,
+                    },
+                ))
+
+        rows = sorted(rows, key=lambda row: row["profit"], reverse=True)
+        for index, row in enumerate(rows, start=1):
+            row["rank"] = index
+        total_revenue = sum(row["actual_revenue"] for row in rows)
+        total_cost = sum(row["actual_cost"] for row in rows)
+        total_profit = total_revenue - total_cost
+        return Response({
+            "compare": compare,
+            "count": len(rows),
+            "total_revenue": total_revenue,
+            "total_cost": total_cost,
+            "total_profit": total_profit,
+            "overall_margin": self._margin(total_profit, total_revenue),
+            "best": rows[0] if rows else None,
+            "weakest": rows[-1] if rows else None,
+            "results": rows,
+        })
+
+
 class ProjectPlannerAPIView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
@@ -424,6 +555,7 @@ class MarketplaceMapAPIView(APIView):
                 "longitude": float(item.longitude),
                 "status": item.status,
                 "description": item.description or "",
+                "primary_image_url": ProduceListingSerializer(item, context={"request": request}).data.get("primary_image_url"),
             })
         for item in buyer_requests[:300]:
             pins.append({
@@ -447,9 +579,10 @@ class ProduceListingViewSet(viewsets.ModelViewSet):
     serializer_class = ProduceListingSerializer
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
+    parser_classes = [JSONParser, MultiPartParser, FormParser]
 
     def get_queryset(self):
-        qs = ProduceListing.objects.filter(farmer=self.request.user)
+        qs = ProduceListing.objects.filter(farmer=self.request.user).prefetch_related("images")
         qs = apply_market_filters(qs, self.request, is_listing=True)
         status_filter = self.request.query_params.get("status")
         if status_filter:
@@ -458,6 +591,30 @@ class ProduceListingViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(farmer=self.request.user)
+
+    @action(detail=True, methods=["post"], url_path="images", parser_classes=[MultiPartParser, FormParser])
+    def upload_images(self, request, pk=None):
+        listing = self.get_object()
+        images = request.FILES.getlist("images") or request.FILES.getlist("uploaded_images") or request.FILES.getlist("image")
+        if not images:
+            return Response({"detail": "Attach at least one image using images, uploaded_images, or image."}, status=status.HTTP_400_BAD_REQUEST)
+
+        already_has_primary = listing.images.filter(is_primary=True).exists()
+        start_order = listing.images.count()
+        created = []
+        for index, image in enumerate(images):
+            created.append(ProduceListingImage.objects.create(
+                listing=listing,
+                uploaded_by=request.user,
+                image=image,
+                is_primary=(not already_has_primary and index == 0),
+                sort_order=start_order + index,
+            ))
+        return Response({
+            "message": "Product image(s) uploaded successfully.",
+            "images": ProduceListingImageSerializer(created, many=True, context={"request": request}).data,
+            "listing": ProduceListingSerializer(listing, context={"request": request}).data,
+        }, status=status.HTTP_201_CREATED)
 
 
 class OpenBuyerRequestViewSet(viewsets.ReadOnlyModelViewSet):
@@ -485,7 +642,7 @@ class OpenProduceListingViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        qs = ProduceListing.objects.filter(status=ListingStatusChoices.OPEN).select_related("farmer", "farm")
+        qs = ProduceListing.objects.filter(status=ListingStatusChoices.OPEN).select_related("farmer", "farm").prefetch_related("images")
         return apply_market_filters(qs, self.request, is_listing=True)
 
 

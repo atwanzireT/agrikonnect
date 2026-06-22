@@ -73,8 +73,27 @@
         </div>
     </div>
 
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <div class="xl:col-span-2 rounded-3xl border border-green-100 bg-white p-5 shadow-sm">
+            <h2 class="text-xl font-black text-slate-900">Offer comparison</h2>
+            <p class="mb-4 text-sm text-slate-500">Top company offers for the selected filters.</p>
+            <canvas id="priceCompareChart" height="125"></canvas>
+        </div>
+        <div class="rounded-3xl border border-green-100 bg-white p-5 shadow-sm">
+            <h2 class="text-xl font-black text-slate-900">Average by product</h2>
+            <p class="mb-4 text-sm text-slate-500">Average price for each product in the current result set.</p>
+            <canvas id="productAverageChart" height="210"></canvas>
+        </div>
+    </div>
+
+    <div class="rounded-3xl border border-green-100 bg-white p-5 shadow-sm">
+        <h2 class="text-xl font-black text-slate-900">Average by district</h2>
+        <p class="mb-4 text-sm text-slate-500">Use this to see where buyers are offering stronger prices.</p>
+        <canvas id="districtAverageChart" height="95"></canvas>
+    </div>
+
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="lg:col-span-2 rounded-3xl border border-green-100 bg-white p-5 shadow-sm">
+        <div class="lg:col-span-3 rounded-3xl border border-green-100 bg-white p-5 shadow-sm">
             <div class="mb-4 flex items-center justify-between">
                 <div>
                     <h2 class="text-xl font-black text-slate-900">Company offers</h2>
@@ -116,43 +135,103 @@
                 </table>
             </div>
         </div>
-
-        <div class="rounded-3xl border border-green-100 bg-white p-5 shadow-sm">
-            <h2 class="text-xl font-black text-slate-900">Price chart</h2>
-            <p class="mb-4 text-sm text-slate-500">Top 10 company offers.</p>
-            <canvas id="priceCompareChart" height="260"></canvas>
-        </div>
     </div>
 </div>
 
 {{ chart_rows|json_script:"chart-rows" }}
+{{ product_chart_rows|json_script:"product-chart-rows" }}
+{{ district_chart_rows|json_script:"district-chart-rows" }}
 <script>
 (function () {
-    const dataEl = document.getElementById("chart-rows");
-    const rows = dataEl ? JSON.parse(dataEl.textContent) : [];
-    const canvas = document.getElementById("priceCompareChart");
-    if (!canvas || !rows.length || typeof Chart === "undefined") return;
+    const getRows = id => {
+        const dataEl = document.getElementById(id);
+        return dataEl ? JSON.parse(dataEl.textContent) : [];
+    };
+    const offerRows = getRows("chart-rows");
+    const productRows = getRows("product-chart-rows");
+    const districtRows = getRows("district-chart-rows");
+    if (typeof Chart === "undefined") return;
 
-    new Chart(canvas, {
-        type: "bar",
-        data: {
-            labels: rows.map(row => row.company),
-            datasets: [{
-                label: "UGX per unit",
-                data: rows.map(row => row.price),
-                backgroundColor: "#16a34a",
-                borderRadius: 12
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: { legend: { display: false } },
-            scales: {
-                y: { beginAtZero: true, ticks: { callback: value => "UGX " + Number(value).toLocaleString() } },
-                x: { ticks: { maxRotation: 45, minRotation: 0 } }
+    const moneyFormatter = value => "UGX " + Number(value || 0).toLocaleString();
+
+    const offerCanvas = document.getElementById("priceCompareChart");
+    if (offerCanvas && offerRows.length) {
+        new Chart(offerCanvas, {
+            type: "bar",
+            data: {
+                labels: offerRows.map(row => row.company),
+                datasets: [{
+                    label: "UGX per unit",
+                    data: offerRows.map(row => row.price),
+                    backgroundColor: "#16a34a",
+                    borderRadius: 12
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { callbacks: { label: context => moneyFormatter(context.parsed.y) } }
+                },
+                scales: {
+                    y: { beginAtZero: true, ticks: { callback: value => moneyFormatter(value) } },
+                    x: { ticks: { maxRotation: 35, minRotation: 0 } }
+                }
             }
-        }
-    });
+        });
+    }
+
+    const productCanvas = document.getElementById("productAverageChart");
+    if (productCanvas && productRows.length) {
+        new Chart(productCanvas, {
+            type: "bar",
+            data: {
+                labels: productRows.map(row => row.product),
+                datasets: [{
+                    label: "Average price",
+                    data: productRows.map(row => row.average_price),
+                    backgroundColor: "#2563eb",
+                    borderRadius: 12
+                }]
+            },
+            options: {
+                indexAxis: "y",
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { callbacks: { label: context => moneyFormatter(context.parsed.x) } }
+                },
+                scales: { x: { beginAtZero: true, ticks: { callback: value => moneyFormatter(value) } } }
+            }
+        });
+    }
+
+    const districtCanvas = document.getElementById("districtAverageChart");
+    if (districtCanvas && districtRows.length) {
+        new Chart(districtCanvas, {
+            type: "bar",
+            data: {
+                labels: districtRows.map(row => row.district),
+                datasets: [{
+                    label: "Average price",
+                    data: districtRows.map(row => row.average_price),
+                    backgroundColor: "#f97316",
+                    borderRadius: 12
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { callbacks: { label: context => moneyFormatter(context.parsed.y) } }
+                },
+                scales: {
+                    y: { beginAtZero: true, ticks: { callback: value => moneyFormatter(value) } },
+                    x: { ticks: { maxRotation: 35, minRotation: 0 } }
+                }
+            }
+        });
+    }
 })();
 </script>
 {% endblock %}

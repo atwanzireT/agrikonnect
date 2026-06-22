@@ -170,6 +170,12 @@
                             </div>
                         </div>
 
+                        {% if listing.description %}
+                            <p class="mt-4 text-sm leading-6 text-gray-600 line-clamp-2">
+                                {{ listing.description|truncatechars:120 }}
+                            </p>
+                        {% endif %}
+
                         <p class="mt-4 flex items-center gap-2 text-sm text-gray-600">
                             <i class="fas fa-location-dot text-green-600"></i>
                             {{ listing.village|default:listing.subcounty|default:listing.district }}, {{ listing.district }}

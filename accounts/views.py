@@ -492,6 +492,7 @@ def business_login(request):
 
 def logout_view(request):
     logout(request)
+    messages.success(request, "You have been logged out successfully.")
 
     if is_ajax(request):
         return json_success(

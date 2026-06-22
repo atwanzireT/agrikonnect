@@ -88,8 +88,32 @@ def company_price_compare(request):
             "company": price.company_name,
             "price": float(price.price_per_unit),
             "unit": price.unit,
+            "product": price.product_name,
+            "district": price.district or "Not specified",
         }
         for price in prices[:10]
+    ]
+
+    product_chart_rows = [
+        {
+            "product": row["product_name"],
+            "average_price": float(row["average_price"] or 0),
+            "offers": row["offers"],
+        }
+        for row in prices.values("product_name")
+            .annotate(average_price=Avg("price_per_unit"), offers=Count("id"))
+            .order_by("-average_price")[:8]
+    ]
+
+    district_chart_rows = [
+        {
+            "district": row["district"] or "Not specified",
+            "average_price": float(row["average_price"] or 0),
+            "offers": row["offers"],
+        }
+        for row in prices.values("district")
+            .annotate(average_price=Avg("price_per_unit"), offers=Count("id"))
+            .order_by("-average_price")[:8]
     ]
 
     context = {
@@ -105,6 +129,8 @@ def company_price_compare(request):
         "selected_district": district,
         "selected_unit": unit,
         "chart_rows": chart_rows,
+        "product_chart_rows": product_chart_rows,
+        "district_chart_rows": district_chart_rows,
     }
     return render(request, "prices/company_price_compare.html", context)
 

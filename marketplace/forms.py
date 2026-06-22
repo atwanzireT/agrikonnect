@@ -40,6 +40,13 @@ class ProduceListingForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         if farmer:
             self.fields["farm"].queryset = Farm.objects.filter(farmer=farmer)
+
+        self.fields["crop_name"].label = "Product name"
+        self.fields["crop_name"].widget.attrs.setdefault("placeholder", "e.g. Maize, Beans, Matooke")
+        self.fields["description"].label = "Product description"
+        self.fields["description"].help_text = "Describe quality, harvest date, packaging, storage condition, delivery options, and anything buyers should know."
+        self.fields["description"].widget.attrs.setdefault("placeholder", "Example: Freshly harvested maize, clean and dry, packed in 100kg bags, available for pickup in Mbarara...")
+        self.fields["status"].initial = "open"
         apply_tailwind_classes(self)
 
 
@@ -47,6 +54,9 @@ class ProduceListingImageForm(forms.ModelForm):
     class Meta:
         model = ProduceListingImage
         fields = ["image", "is_primary", "sort_order"]
+        widgets = {
+            "image": forms.ClearableFileInput(attrs={"accept": "image/*"}),
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
