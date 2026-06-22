@@ -28,6 +28,8 @@ from .views import (
     ProduceListingViewSet,
     OpenProduceListingViewSet,
     OpenBuyerRequestViewSet,
+    CompanyViewSet,
+    MarketOverviewAPIView,
     ListingInquiryViewSet,
     MarketplacePurchaseViewSet,
 )
@@ -47,6 +49,9 @@ router.register("listings", ProduceListingViewSet, basename="api-listings")
 router.register("my-listings", ProduceListingViewSet, basename="api-my-listings")
 router.register("products", OpenProduceListingViewSet, basename="api-products")
 router.register("buyer-requests", OpenBuyerRequestViewSet, basename="api-buyer-requests")
+router.register("buyers", OpenBuyerRequestViewSet, basename="api-buyers")
+router.register("products-in-demand", OpenBuyerRequestViewSet, basename="api-products-in-demand")
+router.register("companies", CompanyViewSet, basename="api-companies")
 router.register("listing-inquiries", ListingInquiryViewSet, basename="api-listing-inquiries")
 router.register("purchases", MarketplacePurchaseViewSet, basename="api-purchases")
 
@@ -64,5 +69,6 @@ urlpatterns = [
     path("profit-compare/", ProfitComparisonAPIView.as_view(), name="farmer-api-profit-compare"),
     path("input-trends/", ProjectInputTrendsAPIView.as_view(), name="farmer-api-input-trends"),
     path("market-map/", MarketplaceMapAPIView.as_view(), name="farmer-api-market-map"),
+    path("market-overview/", MarketOverviewAPIView.as_view(), name="farmer-api-market-overview"),
     path("", include(router.urls)),
 ]

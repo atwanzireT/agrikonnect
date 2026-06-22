@@ -17,6 +17,7 @@ from farms.models import (
     FarmProject, ProductionBatch, ProjectPlannedActivity, ProjectInputRecord, ProjectRevenueRecord,
 )
 from marketplace.models import ProduceListing, ProduceListingImage, BuyerRequest, ListingInquiry, MarketplacePurchase, ListingStatusChoices, RequestStatusChoices
+from profiles.models import BusinessProfile
 
 from .serializers import (
     AccountRegistrationSerializer,
@@ -35,6 +36,7 @@ from .serializers import (
     ProduceListingSerializer,
     ProduceListingImageSerializer,
     BuyerRequestSerializer,
+    CompanySerializer,
     ListingInquirySerializer,
     MarketplacePurchaseSerializer,
 )
@@ -701,8 +703,16 @@ class OpenBuyerRequestViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        qs = BuyerRequest.objects.filter(status=RequestStatusChoices.OPEN)
-        return apply_market_filters(qs, self.request, is_listing=False)
+        qs = (
+            BuyerRequest.objects.filter(status=RequestStatusChoices.OPEN)
+            .select_related("business_user", "business_user__business_profile")
+            .prefetch_related("images")
+        )
+        qs = apply_market_filters(qs, self.request, is_listing=False)
+        company = self.request.query_params.get("company") or self.request.query_params.get("company_id")
+        if company:
+            qs = qs.filter(business_user__business_profile__id=company)
+        return qs
 
 
 class ListingInquiryViewSet(viewsets.ModelViewSet):
@@ -722,6 +732,73 @@ class OpenProduceListingViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         qs = ProduceListing.objects.filter(status=ListingStatusChoices.OPEN).select_related("farmer", "farm").prefetch_related("images")
         return apply_market_filters(qs, self.request, is_listing=True)
+
+
+class CompanyViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = CompanySerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        qs = (
+            BusinessProfile.objects.select_related("user")
+            .filter(user__is_active=True, user__account_type="business")
+            .prefetch_related("user__buyer_requests")
+        )
+        q = self.request.query_params.get("q") or self.request.query_params.get("search")
+        district = self.request.query_params.get("district")
+        only_active_buyers = self.request.query_params.get("active_buyers")
+        if q:
+            qs = qs.filter(
+                Q(business_name__icontains=q) |
+                Q(business_type__icontains=q) |
+                Q(contact_person__icontains=q) |
+                Q(user__buyer_requests__crop_name__icontains=q)
+            ).distinct()
+        if district:
+            qs = qs.filter(Q(district__icontains=district) | Q(user__buyer_requests__delivery_district__icontains=district)).distinct()
+        if only_active_buyers in ["1", "true", "yes"]:
+            qs = qs.filter(user__buyer_requests__status=RequestStatusChoices.OPEN).distinct()
+        return qs.order_by("business_name")
+
+
+class MarketOverviewAPIView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        products_qs = apply_market_filters(
+            ProduceListing.objects.filter(status=ListingStatusChoices.OPEN).select_related("farmer", "farm").prefetch_related("images"),
+            request,
+            is_listing=True,
+        )
+        buyers_qs = apply_market_filters(
+            BuyerRequest.objects.filter(status=RequestStatusChoices.OPEN)
+            .select_related("business_user", "business_user__business_profile")
+            .prefetch_related("images"),
+            request,
+            is_listing=False,
+        )
+        limit = int(request.query_params.get("limit", 50))
+        limit = max(1, min(limit, 100))
+        demand_by_crop = list(
+            buyers_qs.values("crop_name", "unit")
+            .annotate(total_quantity=Sum("quantity_needed"), buyers_count=Count("id"))
+            .order_by("-buyers_count", "crop_name")[:20]
+        )
+        supply_by_crop = list(
+            products_qs.values("crop_name", "unit")
+            .annotate(total_quantity=Sum("quantity"), listings_count=Count("id"))
+            .order_by("-listings_count", "crop_name")[:20]
+        )
+        return Response({
+            "available_products_count": products_qs.count(),
+            "buyers_in_demand_count": buyers_qs.count(),
+            "demand_by_crop": demand_by_crop,
+            "supply_by_crop": supply_by_crop,
+            "available_products": ProduceListingSerializer(products_qs[:limit], many=True, context={"request": request}).data,
+            "products_in_demand": BuyerRequestSerializer(buyers_qs[:limit], many=True, context={"request": request}).data,
+        })
 
 
 class MarketplacePurchaseViewSet(viewsets.ModelViewSet):

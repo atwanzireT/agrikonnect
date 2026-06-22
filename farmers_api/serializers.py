@@ -1,11 +1,13 @@
 from rest_framework import serializers
 from django.contrib.auth import authenticate, get_user_model
+from django.db.models import Sum, Count
 
 from farms.models import (
     Farm, FarmActivity, HarvestRecord, FarmExpense, SalesRecord,
     FarmProject, ProductionBatch, ProjectPlannedActivity, ProjectInputRecord, ProjectRevenueRecord,
 )
-from marketplace.models import ProduceListing, ProduceListingImage, BuyerRequest, ListingInquiry, MarketplacePurchase
+from marketplace.models import ProduceListing, ProduceListingImage, BuyerRequest, BuyerRequestImage, ListingInquiry, MarketplacePurchase
+from profiles.models import BusinessProfile
 
 User = get_user_model()
 
@@ -435,12 +437,90 @@ class ProduceListingSerializer(serializers.ModelSerializer):
         return listing
 
 
+class BuyerRequestImageSerializer(serializers.ModelSerializer):
+    image_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = BuyerRequestImage
+        fields = ["id", "image", "image_url", "is_primary", "sort_order", "created_at", "updated_at"]
+        read_only_fields = ["id", "image_url", "created_at", "updated_at"]
+
+    def get_image_url(self, obj):
+        if not obj.image:
+            return None
+        url = obj.image.url
+        request = self.context.get("request")
+        return request.build_absolute_uri(url) if request else url
+
+
 class BuyerRequestSerializer(serializers.ModelSerializer):
     buyer_name = serializers.CharField(source="business_user.full_name", read_only=True)
+    buyer_phone = serializers.CharField(source="business_user.phone", read_only=True)
+    buyer_email = serializers.EmailField(source="business_user.email", read_only=True)
+    company_id = serializers.SerializerMethodField()
+    company_name = serializers.SerializerMethodField()
+    company_type = serializers.SerializerMethodField()
+    company_district = serializers.SerializerMethodField()
+    company_address = serializers.SerializerMethodField()
+    price_range = serializers.SerializerMethodField()
+    needed_summary = serializers.SerializerMethodField()
+    location_summary = serializers.SerializerMethodField()
+    primary_image_url = serializers.SerializerMethodField()
+    images = BuyerRequestImageSerializer(many=True, read_only=True)
     pin_type = serializers.SerializerMethodField()
 
     def get_pin_type(self, obj):
         return "buyer"
+
+    def _business_profile(self, obj):
+        return getattr(obj.business_user, "business_profile", None)
+
+    def get_company_id(self, obj):
+        profile = self._business_profile(obj)
+        return str(profile.id) if profile else None
+
+    def get_company_name(self, obj):
+        profile = self._business_profile(obj)
+        return profile.business_name if profile else getattr(obj.business_user, "full_name", "Buyer")
+
+    def get_company_type(self, obj):
+        profile = self._business_profile(obj)
+        return profile.business_type if profile else None
+
+    def get_company_district(self, obj):
+        profile = self._business_profile(obj)
+        return profile.district if profile else None
+
+    def get_company_address(self, obj):
+        profile = self._business_profile(obj)
+        return profile.physical_address if profile else None
+
+    def get_price_range(self, obj):
+        if obj.min_price and obj.max_price:
+            return f"{obj.min_price} - {obj.max_price} per {obj.unit}"
+        if obj.max_price:
+            return f"Up to {obj.max_price} per {obj.unit}"
+        if obj.min_price:
+            return f"From {obj.min_price} per {obj.unit}"
+        return "Price negotiable"
+
+    def get_needed_summary(self, obj):
+        return f"{obj.quantity_needed} {obj.unit} of {obj.crop_name}"
+
+    def get_location_summary(self, obj):
+        return obj.delivery_location or obj.delivery_district or "Location not specified"
+
+    def get_primary_image_url(self, obj):
+        image = None
+        try:
+            image = obj.images.filter(is_primary=True).first() or obj.images.first()
+        except Exception:
+            image = None
+        if not image or not image.image:
+            return None
+        url = image.image.url
+        request = self.context.get("request")
+        return request.build_absolute_uri(url) if request else url
 
     class Meta:
         model = BuyerRequest
@@ -453,6 +533,45 @@ class ListingInquirySerializer(serializers.ModelSerializer):
         model = ListingInquiry
         fields = "__all__"
         read_only_fields = ["business_user", "created_at", "updated_at", "status"]
+
+
+class CompanySerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source="business_name", read_only=True)
+    phone = serializers.CharField(source="user.phone", read_only=True)
+    email = serializers.EmailField(source="user.email", read_only=True)
+    description = serializers.SerializerMethodField()
+    active_buy_requests_count = serializers.SerializerMethodField()
+    active_products_in_demand = serializers.SerializerMethodField()
+    total_quantity_in_demand = serializers.SerializerMethodField()
+
+    class Meta:
+        model = BusinessProfile
+        fields = [
+            "id", "name", "business_name", "business_type", "contact_person",
+            "district", "physical_address", "website", "phone", "email",
+            "approval_status", "description", "active_buy_requests_count",
+            "active_products_in_demand", "total_quantity_in_demand",
+        ]
+
+    def _open_requests(self, obj):
+        return obj.user.buyer_requests.filter(status="open")
+
+    def get_description(self, obj):
+        products = list(self._open_requests(obj).values_list("crop_name", flat=True).distinct()[:4])
+        if products:
+            return "Buying " + ", ".join(products)
+        parts = [obj.business_type, obj.district]
+        return " • ".join([p for p in parts if p]) or "Agricultural buyer"
+
+    def get_active_buy_requests_count(self, obj):
+        return self._open_requests(obj).count()
+
+    def get_active_products_in_demand(self, obj):
+        return list(self._open_requests(obj).values_list("crop_name", flat=True).distinct())
+
+    def get_total_quantity_in_demand(self, obj):
+        total = self._open_requests(obj).aggregate(total=Sum("quantity_needed"))["total"]
+        return total or 0
 
 
 class MarketplacePurchaseSerializer(serializers.ModelSerializer):
